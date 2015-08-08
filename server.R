@@ -27,7 +27,7 @@ sqlitePath <- file.path("responses", "data.sqlite")
 
 #stimuli video setup
 stimDir <- "stimuli"
-maskColor <- "green"
+maskColor <- "black"
 aws <- "https://s3.amazonaws.com/fingerspelling-perception"
 
 # # for writing the stim csv
