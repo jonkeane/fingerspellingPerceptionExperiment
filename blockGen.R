@@ -6,7 +6,7 @@ blocks <-
   list("practice" =
          list(
            "message" =
-             "<h4>Now we're ready to start the experiment, first let's try a few practice items. <br/> <br/>  Type the word that was fingerspelled. If you don’t know the exact word, type the letters you think you saw.<br /> <br/> Remember, all of the words in the practice section, as well as in the experiment are real words of English.</h4>",
+             "<h4>Now we're ready to start the experiment, first let's try a few practice items. <br/> <br/>  Type the word that was fingerspelled. If you don’t know the exact word, type the letters you think you saw.<br /> <br/> Remember, all of the words in the practice section, as well as in the experiment are real words of English. <br/> <br/>The videos may take a second to load, please be patient. If no video shows up, please type <emph>no video</emph> into the box, and continue with the experiment.</h4>",
            "videos" =
              data.frame(
                "num" = c(1:4),
@@ -18,7 +18,7 @@ blocks <-
        "allClearA" =
          list(
            "message" =
-             "<h4>Good job! Now we will begin the expeirment. <br/> <br/> Type the word that was fingerspelled. If you don’t know the exact word, type the letters you think you saw.</h4>",
+             "<h4>Good job! Now we will begin the expeirment. <br/> <br/> Type the word that was fingerspelled. If you don’t know the exact word, type the letters you think you saw.  <br/> <br/>The videos may take a second to load, please be patient. If no video shows up, please type <emph>no video</emph> into the box, and continue with the experiment.</h4>",
            "videos" =
              data.frame(
                "num" = c(1:15),
@@ -30,7 +30,7 @@ blocks <-
        "holdsOnly" =
          list(
            "message" =
-             "<h4>Take a little break if you like. <br/> <br/> Now you’ll see fingerspelled videos very similar to the ones you’ve seen already, but this time a black screen is inserted to block certain parts of the video. Just as before, do your best to understand the word that was fingerspelled. <br/> <br/>  Type the word you saw. If you aren’t sure, type the letters you saw. <br/> <br/> for testing: <b>holds only</b></h4>",
+             "<h4>Take a little break if you like. <br/> <br/> Now you’ll see fingerspelled videos very similar to the ones you’ve seen already, but this time a black screen is inserted to block certain parts of the video. Just as before, do your best to understand the word that was fingerspelled. <br/> <br/>  Type the word you saw. If you aren’t sure, type the letters you saw. <br/> <br/>The videos may take a second to load, please be patient. If no video shows up, please type <emph>no video</emph> into the box, and continue with the experiment.</h4>",
            "videos" =
              data.frame(
                "num" = c(1:30),
@@ -42,7 +42,7 @@ blocks <-
        "transitionsOnly" =
          list(
            "message" =
-             "<h4>Take a little break if you like. <br/> <br/> Now you’ll see fingerspelled videos very similar to the ones you’ve seen already, but this time a black screen is inserted to block certain parts of the video. Just as before, do your best to understand the word that was fingerspelled. <br/> <br/>  Type the word you saw. If you aren’t sure, type the letters you saw.  <br/> <br/> for testing: <b>transitions only</b></h4>",
+             "<h4>Take a little break if you like. <br/> <br/> Now you’ll see fingerspelled videos very similar to the ones you’ve seen already, but this time a black screen is inserted to block certain parts of the video. Just as before, do your best to understand the word that was fingerspelled. <br/> <br/>  Type the word you saw. If you aren’t sure, type the letters you saw. <br/> <br/>The videos may take a second to load, please be patient. If no video shows up, please type <emph>no video</emph> into the box, and continue with the experiment.</h4>",
            "videos" =
              data.frame(
                "num" = c(1:30),
@@ -54,7 +54,7 @@ blocks <-
        "allClearB" =
          list(
            "message" =
-             "<h4>Almost done! Take a little break if you like. <br/> <br/> Now you’ll see fingerspelled videos very similar to the first ones you saw. Just as before, do your best to understand the word that was fingerspelled. <br/> <br/>  Type the word you saw. If you aren’t sure, type the letters you saw.</h4>",
+             "<h4>Almost done! Take a little break if you like. <br/> <br/> Now you’ll see fingerspelled videos very similar to the first ones you saw. Just as before, do your best to understand the word that was fingerspelled. <br/> <br/>  Type the word you saw. If you aren’t sure, type the letters you saw. <br/> <br/>The videos may take a second to load, please be patient. If no video shows up, please type <emph>no video</emph> into the box, and continue with the experiment.</h4>",
            "videos" =
              data.frame(
                "num" = c(1:15),
