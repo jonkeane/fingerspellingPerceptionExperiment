@@ -37,7 +37,7 @@ if(contains(idsInCache, params.video)){
    stim = stimDiv.appendChild(videoFromCache);
   } catch (e) {
     console.log(e)
-    console.log("There was an error loading the video from the catch, instead, I'm fetching the video directly.");
+    console.log("There was an error loading the video from the cache, instead, I'm fetching the video directly.");
     var vid = document.createElement("video");
     vid.setAttribute("type", "video/mp4");
     vid.setAttribute("preload", "auto");
