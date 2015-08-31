@@ -149,7 +149,8 @@ shinyServer(function(input, output, session) {
     })
     
     output$continueButton <- renderUI({
-      actionButton("continue", label = "please wait...", class = "btn-primary", disabled = TRUE)
+#       actionButton("continue", label = "please wait...", class = "btn-primary", disabled = TRUE)
+        actionButton("continue", label = "continue", class = "btn-primary")
     })
   }
   
@@ -237,7 +238,7 @@ shinyServer(function(input, output, session) {
     # Captcha section
     div(
       id = "robotForm",
-      h2("Fingersplleing study – introduction", style = "padding: 15px;"),
+      h2("Fingerspelleing study – introduction", style = "padding: 15px;"),
       robotElemList,
       actionButton("robotSubmit", "submit", class = "btn-primary"), 
       align = "center"
@@ -256,7 +257,7 @@ shinyServer(function(input, output, session) {
       # they got all of the robotchecking captcha questions correct, proceed to language background
       langBG <- list()
       for(i in 1:nrow(languageBG)){
-        langBG <- append(langBG,BGquesGen(languageBG[i,], aws = aws, video=TRUE, text=TRUE))
+        langBG <- append(langBG,BGquesGen(languageBG[i,], aws = aws, video=FALSE, text=TRUE))
       }
       output$page <- renderUI({
         # language background
@@ -322,20 +323,20 @@ shinyServer(function(input, output, session) {
   })
   
   # check if precaching is done on the pause screens
-  observe({
-    if(!is.null(input$donePrecaching)){
-      if(input$donePrecaching==1){
-        # enable/disable the continue button # doesn't work currently
-#         enable(id = "continue")
-        # If either of these messages / UI changes are enabled, the pauseMessage stops updating
-        output$continueButton <- renderUI({
-          actionButton("continue", label = "continue", class = "btn-primary")
-        })
-      }
-    } else {
-#       disable(id = "continue")
-    }
-  })
+#   observe({
+#     if(!is.null(input$donePrecaching)){
+#       if(input$donePrecaching==1){
+#         # enable/disable the continue button # doesn't work currently
+# #         enable(id = "continue")
+#         # If either of these messages / UI changes are enabled, the pauseMessage stops updating
+#         output$continueButton <- renderUI({
+#           actionButton("continue", label = "continue", class = "btn-primary")
+#         })
+#       }
+#     } else {
+# #       disable(id = "continue")
+#     }
+#   })
   
   
   # action to take when the continue button is pressed

@@ -6,7 +6,7 @@ blocks <-
   list("practice" =
          list(
            "message" =
-             "<h4>First, try a few practice items. <br/> <br/>  Type the word that was fingerspelled. If you don’t know the exact word, type the letters you think you saw.</h4>",
+             "<h4>Now we're ready to start the experiment, first let's try a few practice items. <br/> <br/>  Type the word that was fingerspelled. If you don’t know the exact word, type the letters you think you saw.<br /> <br/> Remember, all of the words in the practice section, as well as in the experiment are real words of English.</h4>",
            "videos" =
              data.frame(
                "num" = c(1:4),

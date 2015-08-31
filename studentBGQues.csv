@@ -3,9 +3,9 @@
 "student1.mp4","hearingStatus","Are you deaf, hard of hearing, or hearing?","select","deaf,hard of hearing,hearing","TRUE"
 "student2.mp4","ageAcqASL","At what age did you start learning ASL?","integer",,"TRUE"
 "student3.mp4","age","How old are you now?","integer",,"TRUE"
-"student6.mp4","majorReq","Is ASL required for your major?","yesno",,"TRUE"
+"student6.mp4","majorReq","Is ASL required for your major?","select","yes,no,not sure","TRUE"
 "student4.mp4","whyASL","If ASL is not required for your major, why did you decide to take it?","text",,
 "student7.mp4","major","What is your major?","text",,"TRUE"
 "student8.mp4","nativeLang","What languages did you grow up speaking? If you had one, two, three or more languages growing up, please type them all.","text",,"TRUE"
-"student5.mp4","ageAcqEng","If English is not your first langauge, at what age did you learn English?","integer",,
+"student5.mp4","ageAcqEng","If English is not your first language, at what age did you learn English? If English is your first language, leave this blank.","integer",,
 "student9.mp4","langs","What languages do you speak or sign?","text",,"TRUE"

@@ -17,6 +17,10 @@ if(stimDiv !== null && stimDiv.childNodes.length > 0) {
  stimDiv.removeChild(stimDiv.childNodes[0]);
 }
 
+if(stimDiv === null){
+  console.log("Error: Cannotfind the stim div.");
+}
+
 var inCache = myLoader.files;
 var idsInCache = [];
 for (var i=0;i<inCache.length;i++){idsInCache = idsInCache.concat(inCache[i].id);}
@@ -28,7 +32,20 @@ if(contains(idsInCache, params.video)){
 // set video parameters for the video up next
 // myLoader.getFile(params.video).autoplay = true;
 // myLoader.getFile(params.video).nodeType = "video/mp4"; // doesnt work? 
-  stim = stimDiv.appendChild(myLoader.getFile(params.video));
+  videoFromCache = myLoader.getFile(params.video);
+  try{
+   stim = stimDiv.appendChild(videoFromCache);
+  } catch (e) {
+    console.log(e)
+    console.log("There was an error loading the video from the catch, instead, I'm fetching the video directly.");
+    var vid = document.createElement("video");
+    vid.setAttribute("type", "video/mp4");
+    vid.setAttribute("preload", "auto");
+    vid.setAttribute("src", params.video);
+    // vid.autoplay = true;
+  
+    stim = stimDiv.appendChild(vid);   
+  }
   myLoader.removeFile(params.video);
   stim.setAttribute("type", "video/mp4");
 } else {

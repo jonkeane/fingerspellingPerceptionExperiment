@@ -18,12 +18,12 @@ shinyUI(fluidPage(
                     Shiny.onInputChange("gaClientID", clientId);
                    });')),
 
-  tags$script(HTML('
-                  // myLoader.on("finish", function(){  console.log("All assets loaded."); });
-                  myLoader.on("finish", function(){
-                    Shiny.onInputChange("donePrecaching", 1); 
-                  });
-  ')),
+#   tags$script(HTML('
+#                   // myLoader.on("finish", function(){  console.log("All assets loaded."); });
+#                   myLoader.on("finish", function(){
+#                     Shiny.onInputChange("donePrecaching", 1); 
+#                   });
+#   ')),
 
   tags$script(HTML("
                   // from http://stackoverflow.com/questions/19492776/how-to-reset-scroll-position-in-a-div-using-javascript
