@@ -238,7 +238,7 @@ shinyServer(function(input, output, session) {
     # Captcha section
     div(
       id = "robotForm",
-      h2("Fingerspelleing study – introduction", style = "padding: 15px;"),
+      h2("Fingerspelling study – introduction", style = "padding: 15px;"),
       robotElemList,
       actionButton("robotSubmit", "submit", class = "btn-primary"), 
       align = "center"
