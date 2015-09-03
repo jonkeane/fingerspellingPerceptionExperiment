@@ -99,7 +99,7 @@ shinyServer(function(input, output, session) {
     data
   })  
   
-  saveData <- function(data, table) {
+  saveData <- function(data, table, newPartID) {
     # Connect to the database
     db <- dbConnect(SQLite(), sqlitePath)
     # Construct the update query by looping over the data fields
@@ -113,7 +113,7 @@ shinyServer(function(input, output, session) {
     dbGetQuery(db, query)
     
     # grab the last row id to use as participant id.
-    participantID <<- dbGetQuery(db, "SELECT last_insert_rowid();")[1,1]
+    participantID <<- ifelse(newPartID, dbGetQuery(db, "SELECT last_insert_rowid();")[1,1], participantID)
 
     dbDisconnect(db)
   }
@@ -286,7 +286,7 @@ shinyServer(function(input, output, session) {
   })  
 
   observeEvent(input$languageBGSubmit, {
-    saveData(bgData(), table="participantsession")
+    saveData(bgData(), table="participantsession", newPartID)
     # start the experiment
     nextBlock()
   })  
