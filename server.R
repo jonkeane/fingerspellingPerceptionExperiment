@@ -99,7 +99,7 @@ shinyServer(function(input, output, session) {
     data
   })  
   
-  saveData <- function(data, table, newPartID) {
+  saveData <- function(data, table, newPartID=FALSE) {
     # Connect to the database
     db <- dbConnect(SQLite(), sqlitePath)
     # Construct the update query by looping over the data fields
@@ -286,7 +286,7 @@ shinyServer(function(input, output, session) {
   })  
 
   observeEvent(input$languageBGSubmit, {
-    saveData(bgData(), table="participantsession", newPartID)
+    saveData(bgData(), table="participantsession", newPartID=TRUE)
     # start the experiment
     nextBlock()
   })  
