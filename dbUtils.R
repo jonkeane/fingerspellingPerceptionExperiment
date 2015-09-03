@@ -1,3 +1,5 @@
+library(RSQLite)
+
 sqlitePath <- file.path("responses", "data.sqlite")
 
 # # (Re-)create the wordResp table
