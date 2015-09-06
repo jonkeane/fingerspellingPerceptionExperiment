@@ -28,4 +28,4 @@ names(answers) <- words$videoName
 
 wordResponses$correct <- {wordResponses$word == answers[gsub(".*stim([[:digit:]]+.mp4)", "\\1",  wordResponses$video)]}
 
-wordResponses %>% group_by(partsessionid, block) %>% summarise(rate = mean(correct))
+print(wordResponses %>% group_by(partsessionid, block) %>% summarise(rate = mean(correct)))
