@@ -17,7 +17,7 @@ shinyUI(fluidPage(
                     var clientId = tracker.get("clientId");
                     Shiny.onInputChange("gaClientID", clientId);
                    });')),
-
+# Disabled because it fails to work randomly in safari.
 #   tags$script(HTML('
 #                   // myLoader.on("finish", function(){  console.log("All assets loaded."); });
 #                   myLoader.on("finish", function(){
