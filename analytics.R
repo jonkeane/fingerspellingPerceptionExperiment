@@ -20,5 +20,5 @@ wordResponses <- loadData("wordResp")
 realResp <- filter(wordResponses, partsessionid > 3)
 realResp$timestamp <- as.numeric(realResp$timestamp)
 
-print(realResp %>% group_by(partsessionid) %>% summarise(duration = (max(timestamp)-min(timestamp))/60))
+print.data.frame(realResp %>% group_by(partsessionid) %>% summarise(duration = (max(timestamp)-min(timestamp))/60))
 
