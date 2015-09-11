@@ -1,9 +1,8 @@
 library(shiny)
 library(digest)
-source("blockGen.R")
-source("BGquesGen.R")
-source("BGquesGen.R")
 source("dbUtils.R")
+source("BGquesGen.R")
+source("blockGen.R")
 
 
 ##### Set variables, and load video lists.
@@ -39,7 +38,7 @@ aws <- "https://s3.amazonaws.com/fingerspelling-perception"
 # videos <- list.files(path=searchPath)
 # write.csv(videos, "videoList.csv", row.names = FALSE, col.names = FALSE)
 
-videos <- read.csv("videoList.csv", stringsAsFactors = FALSE, header = FALSE)[,1]
+videoCSV <- "wordList.csv"
 
 
 ##### functions for convenience
@@ -77,9 +76,7 @@ shinyServer(function(input, output, session) {
   # setup the first video, there should be something more systematic here.
   videoUp <- ""
   
-  videosToUse <- sample(videos, 94)
-  
-  blocks <- blockGen(videosToUse, aws=aws, stimDir=stimDir, maskColor=maskColor, playBackrepetitions=2)
+  blocks <- blockGen(videoCSV, aws=aws, stimDir=stimDir, maskColor=maskColor, playBackrepetitions=2)
   
   # functions
   wordData <- reactive({

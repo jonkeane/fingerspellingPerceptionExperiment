@@ -1,84 +1,57 @@
-blockGen <- function(videosToUse, stimDir, maskColor, aws="", playBackrepetitions=1, transOnlyFirst=FALSE) {
+library(jsonlite)
+
+
+blockGen <- function(blockStruct, videosToUse, stimDir, maskColor, aws="", playBackrepetitions=1, transOnlyFirst=FALSE) {
   
-stimDir <- paste(aws, stimDir, sep="/")
+  # Concat the directory lsiting for the stimuli (including the aws path)
+  stimDir <- paste(aws, stimDir, sep="/")
 
-blocks <- 
-  list("practice" =
-         list(
-           "message" =
-             "<h4>Now we're ready to start the experiment, first let's try a few practice items. <br/> <br/>  Type the word that was fingerspelled. If you don’t know the exact word, type the letters you think you saw.<br /> <br/> Remember, all of the words in the practice section, as well as in the experiment are real words of English. <br/> <br/>The videos may take a second to load, please be patient. If no video shows up, please type <i>no video</i> into the box, and continue with the experiment.</h4>",
-           "videos" =
-             data.frame(
-               "num" = c(1:4),
-               "video" = file.path(stimDir, maskColor, "allClear", videosToUse[1:4]),
-               rep = playBackrepetitions,
-               stringsAsFactors = FALSE
-             )
-         ),
-       "allClearA" =
-         list(
-           "message" =
-             "<h4>Good job! Now we will begin the expeirment. <br/> <br/> Type the word that was fingerspelled. If you don’t know the exact word, type the letters you think you saw.  <br/> <br/>The videos may take a second to load, please be patient. If no video shows up, please type <i>no video</i> into the box, and continue with the experiment.</h4>",
-           "videos" =
-             data.frame(
-               "num" = c(1:15),
-               "video" = file.path(stimDir, maskColor, "allClear", videosToUse[5:19]),
-               rep = playBackrepetitions,
-               stringsAsFactors = FALSE
-             )
-         ),
-       "holdsOnly" =
-         list(
-           "message" =
-             "<h4>Take a little break if you like. <br/> <br/> Now you’ll see fingerspelled videos very similar to the ones you’ve seen already, but this time a black screen is inserted to block certain parts of the video. Just as before, do your best to understand the word that was fingerspelled. <br/> <br/>  Type the word you saw. If you aren’t sure, type the letters you saw. <br/> <br/>The videos may take a second to load, please be patient. If no video shows up, please type <i>no video</i> into the box, and continue with the experiment.</h4>",
-           "videos" =
-             data.frame(
-               "num" = c(1:30),
-               "video" = file.path(stimDir, maskColor, "holdsOnly", videosToUse[20:49]),
-               rep = playBackrepetitions,
-               stringsAsFactors = FALSE
-             )
-         ),
-       "transitionsOnly" =
-         list(
-           "message" =
-             "<h4>Take a little break if you like. <br/> <br/> Now you’ll see fingerspelled videos very similar to the ones you’ve seen already, but this time a black screen is inserted to block certain parts of the video. Just as before, do your best to understand the word that was fingerspelled. <br/> <br/>  Type the word you saw. If you aren’t sure, type the letters you saw. <br/> <br/>The videos may take a second to load, please be patient. If no video shows up, please type <i>no video</i> into the box, and continue with the experiment.</h4>",
-           "videos" =
-             data.frame(
-               "num" = c(1:30),
-               "video" = file.path(stimDir, maskColor, "transOnly", videosToUse[50:79]),
-               rep = playBackrepetitions,
-               stringsAsFactors = FALSE
-             )
-         ),
-       "allClearB" =
-         list(
-           "message" =
-             "<h4>Almost done! Take a little break if you like. <br/> <br/> Now you’ll see fingerspelled videos very similar to the first ones you saw. Just as before, do your best to understand the word that was fingerspelled. <br/> <br/>  Type the word you saw. If you aren’t sure, type the letters you saw. <br/> <br/>The videos may take a second to load, please be patient. If no video shows up, please type <i>no video</i> into the box, and continue with the experiment.</h4>",
-           "videos" =
-             data.frame(
-               "num" = c(1:15),
-               "video" = file.path(stimDir, maskColor, "allClear", videosToUse[80:94]),
-               rep = playBackrepetitions,
-               stringsAsFactors = FALSE
-             )
-         )
-       )
+  # read in the stimuli words, and process them according to least seen.
+  videosDF <- read.csv(videosToUse)
+  videos <- as.character(videosDF$stimName)
+  
+  # grab structure and messages from the external json file.
+  blocks <- fromJSON(blockStruct)
 
-# there ought to be an easier way to do this.
-if(transOnlyFirst){
-  newBlocks = list("practice" = blocks[["practice"]],
-                   "allClearA" = blocks[["allClearA"]],
-                   "transitionsOnly" = blocks[["transitionsOnly"]],
-                   "holdsOnly" = blocks[["holdsOnly"]],
-                   "allClearB" = blocks[["allClearB"]])
-  blocks <- newBlocks
+  # cut the list of videos to use into chunks based on the block descriptions
+  chunks <- sapply(blocks, function(list){return(list[["numStims"]])})
+  videos <- head(videos, sum(chunks))
+  videochunks <- split(videos, rep(1:length(chunks), chunks))
+  
+  videoInsert <- function(list, videos){
+    videoDF <- data.frame(
+      num = 1:length(videos),
+      stimDir = stimDir,
+      speed = list[["speed"]],
+      maskColor = list[["maskColor"]],
+      maskType = list[["condition"]],
+      stim = videos,
+      rep = playBackrepetitions,
+      stringsAsFactors = FALSE
+    )
+    
+    videoDF$video = with(videoDF, file.path(stimDir, speed, maskColor, maskType, stim))
+    
+    
+    list[["videos"]] <- videoDF
+    return(list)
+  }
+
+  blocksOut <- mapply(videoInsert, blocks, videochunks, SIMPLIFY = FALSE)
+  
+  # there ought to be an easier way to do this. Change the json file spec?
+  if(transOnlyFirst){
+    newBlocks = list("practice" = blocks[["practice"]],
+                     "allClearA" = blocks[["allClearA"]],
+                     "transitionsOnly" = blocks[["transitionsOnly"]],
+                     "holdsOnly" = blocks[["holdsOnly"]],
+                     "allClearB" = blocks[["allClearB"]])
+    blocks <- newBlocks
+  }
+  
+  return(blocksOut)
 }
 
-return(blocks)
-}
+test <- blockGen(blockStruct="blockStructure.json", videosToUse="wordList.csv", stimDir="stimuli", maskColor="green", aws="", playBackrepetitions=5, transOnlyFirst=FALSE)
 
-# test <- blockGen(videosToUse, 2, transOnlyFirst = TRUE)
-# test <- blockGen(videosToUse, 2, transOnlyFirst = FALSE)
-
-
+lapply(test, function(x){print.data.frame(x[["videos"]]); return(NULL)})

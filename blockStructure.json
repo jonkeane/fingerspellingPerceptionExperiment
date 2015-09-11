@@ -1,0 +1,42 @@
+{
+  "practice": {
+    "message": ["<h4>Now we're ready to start the experiment, first let's try a few practice items. <br/> <br/>  Type the word that was fingerspelled. If you don’t know the exact word, type the letters you think you saw.<br /> <br/> Remember, all of the words in the practice section, as well as in the experiment are real words of English. <br/> <br/>The videos may take a second to load, please be patient. If no video shows up, please type <i>no video</i> into the box, and continue with the experiment.</h4>"],
+    "videos": null, 
+	"numStims": 4,
+	"condition": "allClear",
+	"maskColor": "green",
+	"speed": "regular"
+ },
+  "allClearA": {
+    "message": ["<h4>Good job! Now we will begin the expeirment. <br/> <br/> Type the word that was fingerspelled. If you don’t know the exact word, type the letters you think you saw.  <br/> <br/>The videos may take a second to load, please be patient. If no video shows up, please type <i>no video</i> into the box, and continue with the experiment.</h4>"],
+    "videos": null, 
+	"numStims": 15,
+	"condition": "allClear",
+	"maskColor": "green",
+	"speed": "regular"
+  },
+  "holdsOnly": {
+    "message": ["<h4>Take a little break if you like. <br/> <br/> Now you’ll see fingerspelled videos very similar to the ones you’ve seen already, but this time a black screen is inserted to block certain parts of the video. Just as before, do your best to understand the word that was fingerspelled. <br/> <br/>  Type the word you saw. If you aren’t sure, type the letters you saw. <br/> <br/>The videos may take a second to load, please be patient. If no video shows up, please type <i>no video</i> into the box, and continue with the experiment.</h4>"],
+    "videos": null, 
+	"numStims": 30,
+	"condition": "holdsOnly",
+	"maskColor": "green",
+	"speed": "regular"
+  },
+  "transitionsOnly": {
+    "message": ["<h4>Take a little break if you like. <br/> <br/> Now you’ll see fingerspelled videos very similar to the ones you’ve seen already, but this time a black screen is inserted to block certain parts of the video. Just as before, do your best to understand the word that was fingerspelled. <br/> <br/>  Type the word you saw. If you aren’t sure, type the letters you saw. <br/> <br/>The videos may take a second to load, please be patient. If no video shows up, please type <i>no video</i> into the box, and continue with the experiment.</h4>"],
+    "videos": null, 
+	"numStims": 30,
+	"condition": "transOnly",
+	"maskColor": "green",
+	"speed": "regular"
+  },
+  "allClearB": {
+    "message": ["<h4>Almost done! Take a little break if you like. <br/> <br/> Now you’ll see fingerspelled videos very similar to the first ones you saw. Just as before, do your best to understand the word that was fingerspelled. <br/> <br/>  Type the word you saw. If you aren’t sure, type the letters you saw. <br/> <br/>The videos may take a second to load, please be patient. If no video shows up, please type <i>no video</i> into the box, and continue with the experiment.</h4>"],
+    "videos": null, 
+	"numStims": 15,
+	"condition": "allClear",
+	"maskColor": "green",
+	"speed": "regular"
+  }
+} 
