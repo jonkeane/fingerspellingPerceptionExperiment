@@ -23,7 +23,7 @@ loadData <- function(table) {
 }
 
 # # (Re-)create the DB tables table
-if(TRUE){
+if(FALSE){
   db <- dbConnect(RMySQL::MySQL(), group = "fsExpAdmin", default.file="./mysql.cnf")
   query <- "DROP TABLE wordResp, participantsession"
   results <- dbGetQuery(db, query)
