@@ -1,8 +1,10 @@
 library(shiny)
 library(digest)
-library(RSQLite)
 source("blockGen.R")
 source("BGquesGen.R")
+source("BGquesGen.R")
+source("dbUtils.R")
+
 
 ##### Set variables, and load video lists.
 # robot prevention / captcha
@@ -21,9 +23,6 @@ fieldsAll <- c("word")
 # mandatory and fields for the language background
 fieldsMandatoryBG <- subset(languageBG, required==TRUE)$qName
 fieldsAllBG <- languageBG$qName
-
-# database setup
-sqlitePath <- file.path("responses", "data.sqlite")
 
 #stimuli video setup
 stimDir <- "stimuli"
@@ -101,7 +100,7 @@ shinyServer(function(input, output, session) {
   
   saveData <- function(data, table, newPartID=FALSE) {
     # Connect to the database
-    db <- dbConnect(SQLite(), sqlitePath)
+    db <- fsdbConn()
     # Construct the update query by looping over the data fields
     query <- sprintf(
       "INSERT INTO %s (%s) VALUES ('%s')",
