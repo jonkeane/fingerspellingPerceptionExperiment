@@ -10,20 +10,42 @@ blockGen <- function(blockStruct, videosToUse, stimDir, maskColor, aws="", playB
   # read in the stimuli words, and process them according to least seen.
   videosDF <- read.csv(videosToUse)
   
+  #subset for english words only
+  videosDF <- filter(videosDF, wordtype != "nonEnglish")
+  
   wordRespData <- loadData("wordResp")
   partSess <- loadData("participantsession")
   prevData <- merge(wordRespData, partSess, by.x="partsessionid", by.y="id")
   
   prevData$video <- as.factor(prevData$video)
+
+  # for separating based on condition. To use this, the video chunker would have to be re-engineered
+  # prevRespCounts <- prevData %>% group_by(speed, maskcolor, masktype, video) %>% summarise(nResps = length(timestamp), nRespSameGAid = sum(gAnalyticsID.y == gAnalyticsID))
+  prevRespCounts <- prevData %>% group_by(video) %>% summarise(nResps = length(timestamp), nRespSameGAid = sum(gAnalyticsID.y == gAnalyticsID))
   
-  prevData %>% group_by(video) %>% summarise(nResps = length(timestamp)) -> test
-  print(test)
-#     
-#   gAnalyticsID
+  # remove directory info
+  prevRespCounts$stimName <- gsub(".*(stim[[:digit:]]+.mp4)", "\\1",  prevRespCounts$video)
   
+  # merge the whole videosDF with the previous response counts
+  videosWithCounts <- merge(select(videosDF, stimName), select(prevRespCounts, -video), all.x=TRUE)
   
-  videos <- as.character(videosDF$stimName)
+  # change all NAs (stims that haven't been seen before) to 0 counts
+  videosWithCounts$nResps[is.na(videosWithCounts$nResps)] <- 0
+  videosWithCounts$nRespSameGAid[is.na(videosWithCounts$nRespSameGAid)] <- 0
+
+  # order, first the responseses with the same GA id, and then overall number of responses. (this will prefer stims this GA id has seen the least, and then after that prefer stims that have been seen the least.)
+  videosWithCounts <- videosWithCounts[with(videosWithCounts, order(nRespSameGAid, nResps)), ]
   
+  # determine weights from number of observations, weighting heavier for this GA having seen the stim, and then invert all of the probabilities so the least seen stimuli are the most likely.
+  addToFloor <- 0.0001
+  videosWithCounts$prob<-1/((videosWithCounts$nRespSameGAid*5+videosWithCounts$nResps)/sum(videosWithCounts$nRespSameGAid*5+videosWithCounts$nResps)+addToFloor)/(sum(1/((videosWithCounts$nRespSameGAid*5+videosWithCounts$nResps)/sum(videosWithCounts$nRespSameGAid*5+videosWithCounts$nResps)+addToFloor)))
+  
+#   # convert to character vector for simple ordering
+#   videos <- as.character(videosWithCounts$stimName)
+
+  # sample without replacement for weighted probability ordering
+  videos <- as.character(sample(videosWithCounts$stimName, nrow(videosWithCounts), prob = videosWithCounts$prob))
+
   # grab structure and messages from the external json file.
   blocks <- fromJSON(blockStruct)
 
