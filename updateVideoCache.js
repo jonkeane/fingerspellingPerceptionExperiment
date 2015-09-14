@@ -1,4 +1,5 @@
-shinyjs.updateVideoCache = function(params){
+Shiny.addCustomMessageHandler('updateVideoCache',
+function(params){
 Shiny.onInputChange("donePrecaching", false);
 
 function pausecomp(millis)
@@ -21,4 +22,4 @@ if(videosToCache[i] !== null){
 
 // myLoader.on("finish", function(){  console.log("All assets loaded."); });
 // myLoader.on("finish", function(){ Shiny.onInputChange("donePrecaching", 1); });
-};
+});

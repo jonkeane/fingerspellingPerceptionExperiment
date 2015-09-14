@@ -4,13 +4,14 @@ library(shinyjs)
 appCSS <- ".mandatory_star { color: red; }"
 
 shinyUI(fluidPage(
-  tags$head(includeScript("googleAnalytics.js")),
+  tags$head(
+    includeScript("googleAnalytics.js"), 
+    includeScript("changeVideo.js"),
+    includeScript("updateVideoCache.js"),
+    tags$script("Shiny.addCustomMessageHandler('scrollToTop', function(params){window.scrollTo(0,0);})")
+    ),
   useShinyjs(),
   inlineCSS(appCSS),
-  extendShinyjs("changeVideo.js"),
-  extendShinyjs("updateVideoCache.js"),
-  extendShinyjs(text = "shinyjs.scrollToTop = function(params){window.scrollTo(0,0);}"),
-#   extendShinyjs("videoCacheProgress.js"),
   tags$script(src="js/html5Preloader.js"),
   tags$script(HTML('myLoader = new html5Preloader();')),
   tags$script(HTML('ga(function(tracker) {

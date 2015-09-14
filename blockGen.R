@@ -1,4 +1,5 @@
 library(jsonlite)
+library(dplyr)
 
 
 blockGen <- function(blockStruct, videosToUse, stimDir, maskColor, aws="", playBackrepetitions=1, transOnlyFirst=FALSE) {
@@ -8,6 +9,19 @@ blockGen <- function(blockStruct, videosToUse, stimDir, maskColor, aws="", playB
 
   # read in the stimuli words, and process them according to least seen.
   videosDF <- read.csv(videosToUse)
+  
+  wordRespData <- loadData("wordResp")
+  partSess <- loadData("participantsession")
+  prevData <- merge(wordRespData, partSess, by.x="partsessionid", by.y="id")
+  
+  prevData$video <- as.factor(prevData$video)
+  
+  prevData %>% group_by(video) %>% summarise(nResps = length(timestamp)) -> test
+  print(test)
+#     
+#   gAnalyticsID
+  
+  
   videos <- as.character(videosDF$stimName)
   
   # grab structure and messages from the external json file.
@@ -52,6 +66,6 @@ blockGen <- function(blockStruct, videosToUse, stimDir, maskColor, aws="", playB
   return(blocksOut)
 }
 
-test <- blockGen(blockStruct="blockStructure.json", videosToUse="wordList.csv", stimDir="stimuli", maskColor="green", aws="", playBackrepetitions=5, transOnlyFirst=FALSE)
-
-lapply(test, function(x){print.data.frame(x[["videos"]]); return(NULL)})
+# test <- blockGen(blockStruct="blockStructure.json", videosToUse="wordList.csv", stimDir="stimuli", maskColor="green", aws="http://meta.uchicago.edu", playBackrepetitions=5, transOnlyFirst=FALSE)
+# 
+# lapply(test, function(x){print.data.frame(x[["videos"]]); return(NULL)})

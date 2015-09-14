@@ -25,8 +25,8 @@ fieldsAllBG <- languageBG$qName
 
 #stimuli video setup
 stimDir <- "stimuli"
-maskColor <- "black"
-aws <- "https://s3.amazonaws.com/fingerspelling-perception"
+maskColor <- "green"
+aws <- "http://meta.uchicago.edu"
 
 # # for writing the stim csv
 # webDir <- "www"
@@ -48,9 +48,14 @@ sqlStrip <- function(string) {
   return(string)
 }
 
-randomRows <- function(df,n, ...){
-  #sample rows from a df from http://stackoverflow.com/questions/8273313/random-rows-in-dataframe-in-r
-  return(df[sample(nrow(df),n, ...),])
+randomRows <- function(df,n, nonRandom=FALSE, ...){
+  if(nonRandom){
+    # for when this should not be random
+    return(df[1:n,])
+  } else {
+    #sample rows from a df from http://stackoverflow.com/questions/8273313/random-rows-in-dataframe-in-r
+    return(df[sample(nrow(df),n, ...),])
+  }
 }
 
 labelMandatory <- function(label) {
@@ -76,14 +81,16 @@ shinyServer(function(input, output, session) {
   # setup the first video, there should be something more systematic here.
   videoUp <- ""
   
-  blocks <- blockGen(videoCSV, aws=aws, stimDir=stimDir, maskColor=maskColor, playBackrepetitions=2)
+#   blocks <- blockGen(videoCSV, aws=aws, stimDir=stimDir, maskColor=maskColor, playBackrepetitions=2)
+  blocks <- blockGen(blockStruct="blockStructure.json", videosToUse="wordList.csv", stimDir="stimuli", maskColor="green", aws=aws, playBackrepetitions=2)
+  
   
   # functions
   wordData <- reactive({
     data <- sapply(fieldsAll, function(x) input[[x]])
     # strip anything that's not alphanumeric off of the input. This could be replaced with escapes.
     data <- sqlStrip(data)
-    data <- c(partsessionid = participantID, data, timestamp = epochTime(), video = videoUp$video, numInBlock = videoUp$num, block = names(blocks[1]), repetitions = videoUp$rep)
+    data <- c(partsessionid = participantID, data, timestamp = epochTime(), video = videoUp$video, numInBlock = videoUp$num, block = names(blocks[1]), repetitions = videoUp$rep, speed = videoUp$speed, maskcolor = videoUp$maskColor, masktype = videoUp$maskType)
     data
   })
   
@@ -108,8 +115,8 @@ shinyServer(function(input, output, session) {
     # Submit the update query and disconnect
     dbGetQuery(db, query)
     
-    # grab the last row id to use as participant id.
-    participantID <<- ifelse(newPartID, dbGetQuery(db, "SELECT last_insert_rowid();")[1,1], participantID)
+    # grab the last row id to use as participant id. # broken with mysql!!!
+    participantID <<- ifelse(newPartID, dbGetQuery(db, "SELECT LAST_INSERT_ID();")[1,1], participantID)
 
     dbDisconnect(db)
   }
@@ -118,21 +125,22 @@ shinyServer(function(input, output, session) {
     
     output$page <- renderUI({
       # Scroll to the top
-      js$scrollToTop()
-      
+      session$sendCustomMessage(type = 'scrollToTop', message=list())
+
       # the extended javascript requires arguments to be submitted individually, and unlisting with do.call and the like does not seem to work. Very hacky.
       # do.call(js$updateVideoCache, videoCache)
-      js$updateVideoCache(blocks[[1]]$videos[1,]$video, 
-                          blocks[[1]]$videos[2,]$video, 
-                          blocks[[1]]$videos[3,]$video, 
-                          blocks[[1]]$videos[4,]$video, 
-                          blocks[[1]]$videos[5,]$video, 
-                          blocks[[1]]$videos[6,]$video, 
-                          blocks[[1]]$videos[7,]$video, 
-                          blocks[[1]]$videos[8,]$video, 
-                          blocks[[1]]$videos[9,]$video, 
-                          blocks[[1]]$videos[10,]$video
-      )
+      session$sendCustomMessage(type = 'updateVideoCache', message = list(
+        blocks[[1]]$videos[1,]$video, 
+        blocks[[1]]$videos[2,]$video, 
+        blocks[[1]]$videos[3,]$video, 
+        blocks[[1]]$videos[4,]$video, 
+        blocks[[1]]$videos[5,]$video, 
+        blocks[[1]]$videos[6,]$video, 
+        blocks[[1]]$videos[7,]$video, 
+        blocks[[1]]$videos[8,]$video, 
+        blocks[[1]]$videos[9,]$video, 
+        blocks[[1]]$videos[10,]$video
+        ))
       
       # display splash screen between blocks
       div(
@@ -157,15 +165,15 @@ shinyServer(function(input, output, session) {
       saveData(wordData(), table="wordResp")
       reset("form")    
     }
-  
+
     if(nrow(blocks[[1]]$videos)==0){
       # change to the next block
       blocks <<- tail(blocks, length(blocks)-1)
       if(length(blocks)==0){
         output$page <- renderUI({
           # Scroll to the top
-          js$scrollToTop()
-          
+          session$sendCustomMessage(type = 'scrollToTop', message=list())
+
           div(
             id = "thankyou_msg",
             h3("Thanks, your response was submitted successfully!")
@@ -177,8 +185,8 @@ shinyServer(function(input, output, session) {
     } else {
       output$page <- renderUI({list(
         # Scroll to the top
-        js$scrollToTop(),
-        
+        session$sendCustomMessage(type = 'scrollToTop', message=list()),
+
         #display the video, disable the context menu to attempt to stop people from playing the video more than once.
         div(
           id = "stimuliVideo", 
@@ -197,14 +205,15 @@ shinyServer(function(input, output, session) {
       # grab the next video and then store the videos list less the first
       videoUp <<- head(blocks[[1]]$videos, 1)
       blocks[[1]]$videos <<- tail(blocks[[1]]$videos, nrow(blocks[[1]]$videos)-1)
-
-      if(!is.na(blocks[[1]]$videos[10,]$video)){
-        js$updateVideoCache(blocks[[1]]$videos[10,]$video)
-      }      
       
+      if(!is.na(blocks[[1]]$videos[10,]$video)){
+        session$sendCustomMessage(type = 'updateVideoCache', message = list(blocks[[1]]$videos[10,]$video))
+      }      
+
       session$onFlushed(function(){
-        js$changeVideo(video = videoUp$video, rep = videoUp$rep)
+        session$sendCustomMessage(type = 'changeVideo', message = list(video = videoUp$video, rep = videoUp$rep))
         })
+      
     } 
   }
   
@@ -212,7 +221,7 @@ shinyServer(function(input, output, session) {
   observe(gAnalyticsID <<- input$gaClientID)
   
   # generate a subset of robot checking answers, and display them.
-  robotSubList <- randomRows(robotList, 4)
+  robotSubList <- randomRows(robotList, 1, nonRandom=TRUE)
   robotElemList <- list(tags$video(src=paste(aws, "robot", "robotPrevention.mp4", sep="/"), type = "video/mp4", controls=TRUE, width = 640, autoplay=TRUE),
                         tags$br(),
                         tags$br(),
@@ -229,8 +238,8 @@ shinyServer(function(input, output, session) {
   
   output$page <- renderUI({
     # Scroll to the top
-    js$scrollToTop()
-    
+    session$sendCustomMessage(type = 'scrollToTop', message=list())
+
     # Captcha section
     div(
       id = "robotForm",
@@ -268,7 +277,7 @@ shinyServer(function(input, output, session) {
     } else {
       output$page <- renderUI({
         # Scroll to the top
-        js$scrollToTop()
+        session$sendCustomMessage(type = 'scrollToTop', message=list())
         
         div(
           id = "thankyou_msg",
@@ -278,7 +287,7 @@ shinyServer(function(input, output, session) {
     }
     
     # Scroll to the top
-    js$scrollToTop()
+    session$sendCustomMessage(type = 'scrollToTop', message=list())
   })  
 
   observeEvent(input$languageBGSubmit, {

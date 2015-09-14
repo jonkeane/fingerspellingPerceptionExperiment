@@ -1,4 +1,5 @@
-shinyjs.changeVideo = function(params){
+Shiny.addCustomMessageHandler('changeVideo',
+function(params){
 
 function contains(a, obj) {
     for (var i = 0; i < a.length; i++) {
@@ -71,4 +72,4 @@ stim.onended = function () {
   }
 };
 
-};
+});
