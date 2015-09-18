@@ -109,7 +109,7 @@ testRandom <- function(n){
   dfOut$n <- n
   return(dfOut)
 }
-
+# 
 # randoSample <- lapply(1:1000, testRandom)
 # 
 # outRandom <- do.call(rbind, randoSample)
@@ -119,7 +119,11 @@ testRandom <- function(n){
 # 
 # View(filter(outRandom, n==1))
 # 
+# # view distribution of stimuli, including the practice rows (so the all clear distribution is shifted higher.
 # outRandom %>% group_by(stim, maskType) %>% do(data.frame(rows = nrow(.))) %>% ggplot(.) + aes(x=rows) + geom_histogram() + facet_wrap(~maskType, ncol=1)
+# 
+# # view distribution of stimuli, excluding the practice rows.
+# subset(outRandom, !grepl("practice", rownames(outRandom))) %>% group_by(stim, maskType) %>% do(data.frame(rows = nrow(.))) %>% ggplot(.) + aes(x=rows) + geom_histogram() + facet_wrap(~maskType, ncol=1)
 
 # 
 # lapply(test, function(x){print.data.frame(x[["videos"]]); return(NULL)})
