@@ -54,7 +54,7 @@ blockGen <- function(blockStruct, videosToUse, stimDir, maskColor, aws="", playB
 #   # convert to character vector for simple ordering
 #   videos <- as.character(videosWithCounts$stimName)
 
-  # sample without replacement for weighted probability ordering
+  # sample without replacement for weighted probability ordering sample again to randomize the resulting order.
   videos <- as.character(sample(sample(videosWithCounts$stimName, nrow(videosWithCounts), replace=FALSE, prob = videosWithCounts$prob)))
 
   # grab structure and messages from the external json file.
