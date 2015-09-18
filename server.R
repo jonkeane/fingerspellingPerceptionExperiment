@@ -115,8 +115,10 @@ shinyServer(function(input, output, session) {
     # Submit the update query and disconnect
     dbGetQuery(db, query)
     
-    # grab the last row id to use as participant id. # broken with mysql!!!
-    participantID <<- ifelse(newPartID, dbGetQuery(db, "SELECT LAST_INSERT_ID();")[1,1], participantID)
+    # grab the last row id to use as participant id.
+    if(newPartID){
+      participantID <<- dbGetQuery(db, "SELECT LAST_INSERT_ID();")[1,1]
+    }
 
     dbDisconnect(db)
   }
@@ -218,9 +220,11 @@ shinyServer(function(input, output, session) {
   }
   
   # Start the experiment
+  # double to see if this increases the change of grabbing it.
   observe(gAnalyticsID <<- input$gaClientID)
-  
+
   # generate a subset of robot checking answers, and display them.
+  # if 0 rows are specified, then skip this whole thing?
   robotSubList <- randomRows(robotList, 1, nonRandom=TRUE)
   robotElemList <- list(tags$video(src=paste(aws, "robot", "robotPrevention.mp4", sep="/"), type = "video/mp4", controls=TRUE, width = 640, autoplay=TRUE),
                         tags$br(),
@@ -258,6 +262,11 @@ shinyServer(function(input, output, session) {
     data <- gsub(" ", "", data)
     data <- tolower(data)
     ans <- data %in% unlist(strsplit(robotKey[names(data)], ","))
+    
+    # dump answers to database for analysis later
+    captchaData <- list(gAnalyticsID = gAnalyticsID, video = names(data), response = unname(data), correct = as.integer(ans))
+    saveData(captchaData, table="captchASL")
+    
     if(all(ans)){
       # they got all of the robotchecking captcha questions correct, proceed to language background
       langBG <- list()
