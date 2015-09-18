@@ -102,20 +102,21 @@ blockGen <- function(blockStruct, videosToUse, stimDir, maskColor, aws="", playB
 
 # testBlock <- blockGen(blockStruct="blockStructure.json", videosToUse="wordList.csv", stimDir="stimuli", maskColor="green", aws="http://meta.uchicago.edu", playBackrepetitions=5, transOnlyFirst=FALSE)
 
-# testRandom <- function(n){
-#   block <- blockGen(blockStruct="blockStructure.json", videosToUse="wordList.csv", stimDir="stimuli", maskColor="green", aws="http://meta.uchicago.edu", playBackrepetitions=5, transOnlyFirst=FALSE)
-#   dflist <- lapply(block, function(blk){blk[["videos"]]})
-#   dfOut <- do.call("rbind", dflist)
-#   dfOut$n <- n
-#   return(dfOut)
-# }
+testRandom <- function(n){
+  block <- blockGen(blockStruct="blockStructure.json", videosToUse="wordList.csv", stimDir="stimuli", maskColor="green", aws="http://meta.uchicago.edu", playBackrepetitions=5, transOnlyFirst=FALSE)
+  dflist <- lapply(block, function(blk){blk[["videos"]]})
+  dfOut <- do.call("rbind", dflist)
+  dfOut$n <- n
+  return(dfOut)
+}
+
+# randoSample <- lapply(1:1000, testRandom)
 # 
-# outRandom <- data.frame()
-# for(n in 1:100){
-#   outRandom <- rbind(outRandom, testRandom(n))
-# }
+# outRandom <- do.call(rbind, randoSample)
+# 
 # 
 # unique(outRandom) %>% group_by(n) %>% do(data.frame(uniStimsN = length(unique(.$stim)), stimsN = length(.$stim))) -> testRandomResults
+# 
 # View(filter(outRandom, n==1))
 # 
 # outRandom %>% group_by(stim, maskType) %>% do(data.frame(rows = nrow(.))) %>% ggplot(.) + aes(x=rows) + geom_histogram() + facet_wrap(~maskType, ncol=1)
