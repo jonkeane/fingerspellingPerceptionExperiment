@@ -14,6 +14,10 @@ wordResponses$stim <- as.factor(gsub(".*(stim[[:digit:]]+.mp4)", "\\1",  wordRes
 wordResponses$partsessionid <- as.factor(wordResponses$partsessionid)
 names(wordResponses)
 
+
+View(filter(wordResponses, partsessionid==24))
+
+
 ggplot(wordResponses) + aes(x=stim, y=..count..) + geom_point(stat="bin")
 
 wordResponses %>% group_by(stim, masktype) %>% do(data.frame(rows = nrow(.))) -> test
@@ -28,4 +32,4 @@ unique(select(wordResponses, -word)) -> dedupWordResponses
 
 unique(select(wordResponses, -word)) %>% group_by(partsessionid) %>% do(data.frame(uniStimsN = length(unique(.$stim)), stimsN = length(.$stim))) -> test
 
-View(filter(dedupWordResponses, partsessionid==64))
+View(filter(dedupWordResponses, partsessionid==19))

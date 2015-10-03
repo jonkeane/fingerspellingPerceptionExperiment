@@ -2,7 +2,8 @@ library(jsonlite)
 library(dplyr)
 
 
-blockGen <- function(blockStruct, videosToUse, stimDir, maskColor, aws="", playBackrepetitions=1, transOnlyFirst=FALSE) {
+blockGen <- function(blockStruct, videosToUse, stimDir, maskColor, aws="", playBackrepetitions=1, transOnlyFirst=FALSE, gAnalyticsID="") {
+#   print(gAnalyticsID)
   
   # Concat the directory lsiting for the stimuli (including the aws path)
   stimDir <- paste(aws, stimDir, sep="/")
@@ -18,7 +19,7 @@ blockGen <- function(blockStruct, videosToUse, stimDir, maskColor, aws="", playB
   prevData <- merge(wordRespData, partSess, by.x="partsessionid", by.y="id")
   
   prevData$video <- as.factor(prevData$video)
-
+ 
   # for separating based on condition. To use this, the video chunker would have to be re-engineered
   # prevRespCounts <- prevData %>% group_by(speed, maskcolor, masktype, video) %>% summarise(nResps = length(timestamp), nRespSameGAid = sum(gAnalyticsID.y == gAnalyticsID))
   prevRespCounts <- prevData %>% group_by(video) %>% summarise(nResps = length(timestamp), nRespSameGAid = sum(gAnalyticsID.y == gAnalyticsID))
@@ -99,16 +100,39 @@ blockGen <- function(blockStruct, videosToUse, stimDir, maskColor, aws="", playB
   return(blocksOut)
 }
 
+##### write json file for nightwatch tests ###################################
+nightwatchKeyGen <- function(videosToUse, path="./stimAns.json"){
+  # read in the stimuli words, and process them according to least seen.
+  videosDF <- read.csv(videosToUse)
+  
+  out <- as.list(as.character(videosDF$word))
+  out <- setNames(out, as.character(videosDF$stimName))
+
+  write(toJSON(out), file = path)
+}
+
+
+##### write json file for nightwatch captchasl tests ###################################
+# robotList <- read.csv("robot.csv", stringsAsFactors = FALSE)
+# robotKey <- as.list(strsplit(robotList$answer, ","))
+# robotKey <- setNames(robotKey, robotList$video)
+# 
+# write(toJSON(robotKey), file = "./captchASLans.json")
+
+
+##### tests ###################################
+
+# nightwatchKeyGen(videosToUse="wordList.csv")
 
 # testBlock <- blockGen(blockStruct="blockStructure.json", videosToUse="wordList.csv", stimDir="stimuli", maskColor="green", aws="http://meta.uchicago.edu", playBackrepetitions=5, transOnlyFirst=FALSE)
 
-testRandom <- function(n){
-  block <- blockGen(blockStruct="blockStructure.json", videosToUse="wordList.csv", stimDir="stimuli", maskColor="green", aws="http://meta.uchicago.edu", playBackrepetitions=5, transOnlyFirst=FALSE)
-  dflist <- lapply(block, function(blk){blk[["videos"]]})
-  dfOut <- do.call("rbind", dflist)
-  dfOut$n <- n
-  return(dfOut)
-}
+# testRandom <- function(n){
+#   block <- blockGen(blockStruct="blockStructure.json", videosToUse="wordList.csv", stimDir="stimuli", maskColor="green", aws="http://meta.uchicago.edu", playBackrepetitions=5, transOnlyFirst=FALSE)
+#   dflist <- lapply(block, function(blk){blk[["videos"]]})
+#   dfOut <- do.call("rbind", dflist)
+#   dfOut$n <- n
+#   return(dfOut)
+# }
 # 
 # randoSample <- lapply(1:1000, testRandom)
 # 
@@ -127,3 +151,8 @@ testRandom <- function(n){
 
 # 
 # lapply(test, function(x){print.data.frame(x[["videos"]]); return(NULL)})
+
+
+
+
+

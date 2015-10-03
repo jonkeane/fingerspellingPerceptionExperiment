@@ -1,18 +1,6 @@
-library(RSQLite)
 library(dplyr)
-
-sqlitePath <- file.path("responses", "data.sqlite")
-
-loadData <- function(table) {
-  # Connect to the database
-  db <- dbConnect(SQLite(), sqlitePath)
-  # Construct the fetching query
-  query <- sprintf("SELECT * FROM %s", table)
-  # Submit the fetch query and disconnect
-  data <- dbGetQuery(db, query)
-  dbDisconnect(db)
-  data
-}
+library(ggplot2)
+source('dbUtils.R')
 
 participantsessions <- loadData("participantsession")
 wordResponses <- loadData("wordResp")
@@ -21,7 +9,11 @@ letters <- read.csv("ritaApogeesCleaned.csv")
 
 words <- letters %>% group_by(word, wordBegin, wordEnd, wordList, repetition, wordInstanceID, wordtype, length, buttontype, signer, speed, segment, wordInstanceVideoPath, holdProp) %>% summarise()
 
-words$videoName <- gsub("foo/", "", as.character(words$wordInstanceVideoPath))
+letters
+
+words <- read.csv("wordList.csv")
+
+words$videoName <- gsub("wordInstanceVideos/", "", as.character(words$wordInstanceVideoPath))
 
 answers <- as.character(words$word)
 names(answers) <- words$videoName

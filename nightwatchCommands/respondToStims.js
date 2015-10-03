@@ -10,10 +10,22 @@ exports.command = function(reps, callback) {
 							// console.log("keep looping!");
 							this
 							  // .frame(null)
-							  .waitForElementPresent('input#word', 1000)
-							  .setValue('input#word[type=text]', 'nightwatch test')
+								.waitForElementPresent('video', 1000)
+								.waitForElementPresent('input#word', 1000)
 
-						    .waitForElementVisible('button#submit', 1000)
+								.getAttribute('video', 'src', function (res) {
+									// grab and digest the stimuli file name.
+									var str = res.value;
+									var res = str.split("/");
+									var currStim = res[res.length - 1];
+									var currStimAns = this.globals.stimAns[currStim];
+									this.setValue('input#word[type=text]', currStimAns);
+								})
+
+								.WaitForAttribute('button#submit', 'disabled', function(attrib) {
+										// console.log(attrib);
+										return attrib === null;
+								}, 1000)
 						    .pause(500) // for safari
 						    .click('button#submit')
 
@@ -27,7 +39,7 @@ exports.command = function(reps, callback) {
 
 	var checkElem = function(result){
 		// console.log(result);
-		        if (result.value) {	
+		        if (result.value) {
 					this.getText('label[for=word]', wordInput);
 		        } else {
 		            // Element is not present.

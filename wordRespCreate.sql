@@ -1,4 +1,5 @@
 CREATE TABLE wordResp(
+id INT UNIQUE PRIMARY KEY AUTO_INCREMENT, 
 partsessionid INT, 
 word VARCHAR(500), 
 timestamp VARCHAR(500), 

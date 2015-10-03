@@ -26,7 +26,7 @@ fieldsAllBG <- languageBG$qName
 #stimuli video setup
 stimDir <- "stimuli"
 maskColor <- "green"
-aws <- "http://meta.uchicago.edu"
+aws <- "http://localhost"
 
 # # for writing the stim csv
 # webDir <- "www"
@@ -78,19 +78,12 @@ humanTime <- function() format(Sys.time(), "%Y%m%d-%H%M%OS")
 
 ######### Shiny server
 shinyServer(function(input, output, session) {
-  # setup the first video, there should be something more systematic here.
-  videoUp <- ""
-  
-#   blocks <- blockGen(videoCSV, aws=aws, stimDir=stimDir, maskColor=maskColor, playBackrepetitions=2)
-  blocks <- blockGen(blockStruct="blockStructure.json", videosToUse="wordList.csv", stimDir="stimuli", maskColor="green", aws=aws, playBackrepetitions=2)
-  
-  
-  # functions
+  ##### functions ###########################################################
   wordData <- reactive({
     data <- sapply(fieldsAll, function(x) input[[x]])
     # strip anything that's not alphanumeric off of the input. This could be replaced with escapes.
     data <- sqlStrip(data)
-    data <- c(partsessionid = participantID, data, timestamp = epochTime(), video = videoUp$video, numInBlock = videoUp$num, block = names(blocks[1]), repetitions = videoUp$rep, speed = videoUp$speed, maskcolor = videoUp$maskColor, masktype = videoUp$maskType)
+    data <- c(partsessionid = sessValues$participantID, data, timestamp = epochTime(), video = sessValues$videoUp$video, numInBlock = sessValues$videoUp$num, block = names(sessValues$blocks[1]), repetitions = sessValues$videoUp$rep, speed = sessValues$videoUp$speed, maskcolor = sessValues$videoUp$maskColor, masktype = sessValues$videoUp$maskType)
     data
   })
   
@@ -98,11 +91,11 @@ shinyServer(function(input, output, session) {
     data <- sapply(fieldsAllBG, function(x) input[[x]])
     # strip anything that's not alphanumeric off of the input. This could be replaced with escapes.
     data <- sqlStrip(data)
-    data <- c(id = NULL, data, gAnalyticsID = gAnalyticsID, startTime = humanTime()) # The null might not need to be here, alternately, this could be listified.
+    data <- c(id = NULL, data, gAnalyticsID = sessValues$gAnalyticsID, startTime = humanTime()) # The null might not need to be here, alternately, this could be listified.
     data
-  })  
+  })
   
-  saveData <- function(data, table, newPartID=FALSE) {
+  saveData <- function(data, table) {
     # Connect to the database
     db <- fsdbConn()
     # Construct the update query by looping over the data fields
@@ -112,19 +105,25 @@ shinyServer(function(input, output, session) {
       paste(c(names(data)), collapse = ", "),
       paste(c(data), collapse = "', '")
     )
+    
     # Submit the update query and disconnect
     dbGetQuery(db, query)
-    
-    # grab the last row id to use as participant id.
-    if(newPartID){
-      participantID <<- dbGetQuery(db, "SELECT LAST_INSERT_ID();")[1,1]
-    }
-
+    lastInsert <- dbGetQuery(db, "SELECT LAST_INSERT_ID();")[1,1]
     dbDisconnect(db)
+    
+    return(lastInsert)
   }
   
+  saveWordResp <- function(){
+    if(!is.null(input[["word"]])){
+      # detect if there is data to save first!
+      saveData(wordData(), table="wordResp")
+      reset("form")
+    }
+  }
+
+  
   nextBlock <- function(){
-    
     output$page <- renderUI({
       # Scroll to the top
       session$sendCustomMessage(type = 'scrollToTop', message=list())
@@ -132,22 +131,22 @@ shinyServer(function(input, output, session) {
       # the extended javascript requires arguments to be submitted individually, and unlisting with do.call and the like does not seem to work. Very hacky.
       # do.call(js$updateVideoCache, videoCache)
       session$sendCustomMessage(type = 'updateVideoCache', message = list(
-        blocks[[1]]$videos[1,]$video, 
-        blocks[[1]]$videos[2,]$video, 
-        blocks[[1]]$videos[3,]$video, 
-        blocks[[1]]$videos[4,]$video, 
-        blocks[[1]]$videos[5,]$video, 
-        blocks[[1]]$videos[6,]$video, 
-        blocks[[1]]$videos[7,]$video, 
-        blocks[[1]]$videos[8,]$video, 
-        blocks[[1]]$videos[9,]$video, 
-        blocks[[1]]$videos[10,]$video
+        sessValues$blocks[[1]]$videos[1,]$video, 
+        sessValues$blocks[[1]]$videos[2,]$video, 
+        sessValues$blocks[[1]]$videos[3,]$video, 
+        sessValues$blocks[[1]]$videos[4,]$video, 
+        sessValues$blocks[[1]]$videos[5,]$video, 
+        sessValues$blocks[[1]]$videos[6,]$video, 
+        sessValues$blocks[[1]]$videos[7,]$video, 
+        sessValues$blocks[[1]]$videos[8,]$video, 
+        sessValues$blocks[[1]]$videos[9,]$video, 
+        sessValues$blocks[[1]]$videos[10,]$video
         ))
-      
+
       # display splash screen between blocks
       div(
         id = "pause",
-        HTML(blocks[[1]]$message),
+        HTML(sessValues$blocks[[1]]$message),
         uiOutput("continueButton"),
         align = "center",
         style = "padding: 50px;"
@@ -162,16 +161,10 @@ shinyServer(function(input, output, session) {
   
   
   advance <- function(){
-    if(!is.null(input[["word"]])){
-      # detect if there is data to save first!
-      saveData(wordData(), table="wordResp")
-      reset("form")    
-    }
-
-    if(nrow(blocks[[1]]$videos)==0){
+    if(nrow(sessValues$blocks[[1]]$videos)==0){
       # change to the next block
-      blocks <<- tail(blocks, length(blocks)-1)
-      if(length(blocks)==0){
+      sessValues$blocks <- tail(sessValues$blocks, length(sessValues$blocks)-1)
+      if(length(sessValues$blocks)==0){
         output$page <- renderUI({
           # Scroll to the top
           session$sendCustomMessage(type = 'scrollToTop', message=list())
@@ -205,27 +198,52 @@ shinyServer(function(input, output, session) {
       )})
       
       # grab the next video and then store the videos list less the first
-      videoUp <<- head(blocks[[1]]$videos, 1)
-      blocks[[1]]$videos <<- tail(blocks[[1]]$videos, nrow(blocks[[1]]$videos)-1)
+      sessValues$videoUp <- head(sessValues$blocks[[1]]$videos, 1)
+      sessValues$blocks[[1]]$videos <- tail(sessValues$blocks[[1]]$videos, nrow(sessValues$blocks[[1]]$videos)-1)
       
-      if(!is.na(blocks[[1]]$videos[10,]$video)){
-        session$sendCustomMessage(type = 'updateVideoCache', message = list(blocks[[1]]$videos[10,]$video))
+      if(!is.na(sessValues$blocks[[1]]$videos[10,]$video)){
+        session$sendCustomMessage(type = 'updateVideoCache', message = list(sessValues$blocks[[1]]$videos[10,]$video))
       }      
 
+      # the message needs to be formed *outside* of the onFlushed function.
+      # possibly related to? https://github.com/daattali/shinyjs/issues/39
+      msg <- list(video = sessValues$videoUp$video, rep = sessValues$videoUp$rep)
       session$onFlushed(function(){
-        session$sendCustomMessage(type = 'changeVideo', message = list(video = videoUp$video, rep = videoUp$rep))
+        session$sendCustomMessage(type = 'changeVideo', message = msg)
         })
-      
-    } 
+
+    }
   }
   
-  # Start the experiment
-  # double to see if this increases the change of grabbing it.
-  observe(gAnalyticsID <<- input$gaClientID)
+  ##### Start the experiment ######################################################################
+  # setup reactive values
+  sessValues <- reactiveValues()
+  sessValues$gAnalyticsID <- NULL
+  sessValues$blocks <- NULL
+  sessValues$videoUp <- ""
+  
+  observe({
+    sessValues$gAnalyticsID <- input$gaClientID
+  })
+    
+  observeEvent(sessValues$gAnalyticsID,{
+    if({!is.null(sessValues$gAnalyticsID) & is.null(sessValues$blocks)}){
+      # if the google analytics id is not null, and the blocks are null, generate new blocks, which can take a little bit.
+      # print("before blockgen")
+      # print(Sys.time())
+      # generate blocks
+      sessValues$blocks <- blockGen(blockStruct="blockStructure.json", videosToUse="wordList.csv", stimDir="stimuli", maskColor="green", aws=aws, playBackrepetitions=2, gAnalyticsID=sessValues$gAnalyticsID) 
+#       print("after blockgen")
+#       print(Sys.time())
+      enable(id = "robotSubmit")
+      # # changing text seems to make the button only showup once the blocks are generated.
+      # output$robotSubmitButton <- renderUI({actionButton("robotSubmit", "submit", class = "btn-primary")})
+    }
+  })
 
   # generate a subset of robot checking answers, and display them.
   # if 0 rows are specified, then skip this whole thing?
-  robotSubList <- randomRows(robotList, 1, nonRandom=TRUE)
+  robotSubList <- randomRows(robotList, 4, nonRandom=FALSE)
   robotElemList <- list(tags$video(src=paste(aws, "robot", "robotPrevention.mp4", sep="/"), type = "video/mp4", controls=TRUE, width = 640, autoplay=TRUE),
                         tags$br(),
                         tags$br(),
@@ -239,17 +257,17 @@ shinyServer(function(input, output, session) {
     tags$br(),
     tags$br()))
   }
-  
+
   output$page <- renderUI({
     # Scroll to the top
     session$sendCustomMessage(type = 'scrollToTop', message=list())
-
+    
     # Captcha section
     div(
       id = "robotForm",
       h2("Fingerspelling study – introduction", style = "padding: 15px;"),
       robotElemList,
-      actionButton("robotSubmit", "submit", class = "btn-primary"), 
+      actionButton("robotSubmit", label = "submit", class = "btn-primary", disabled = TRUE),
       align = "center"
     )
   })
@@ -264,9 +282,9 @@ shinyServer(function(input, output, session) {
     ans <- data %in% unlist(strsplit(robotKey[names(data)], ","))
     
     # dump answers to database for analysis later
-    captchaData <- list(gAnalyticsID = gAnalyticsID, video = names(data), response = unname(data), correct = as.integer(ans))
+    captchaData <- list(gAnalyticsID = sessValues$gAnalyticsID, video = names(data), response = unname(data), correct = as.integer(ans))
     saveData(captchaData, table="captchASL")
-    
+
     if(all(ans)){
       # they got all of the robotchecking captcha questions correct, proceed to language background
       langBG <- list()
@@ -297,10 +315,10 @@ shinyServer(function(input, output, session) {
     
     # Scroll to the top
     session$sendCustomMessage(type = 'scrollToTop', message=list())
-  })  
+    })  
 
   observeEvent(input$languageBGSubmit, {
-    saveData(bgData(), table="participantsession", newPartID=TRUE)
+    sessValues$participantID <-  saveData(bgData(), table="participantsession")
     # start the experiment
     nextBlock()
   })  
@@ -361,6 +379,7 @@ shinyServer(function(input, output, session) {
   
   # action to take when submit button is pressed
   observeEvent(input$submit, {
+    saveWordResp()
     advance()
   })
   
@@ -371,6 +390,7 @@ shinyServer(function(input, output, session) {
                       !is.null(input[[x]]) && input[[x]] != ""
                     },
                     logical(1)))}){
+      saveWordResp()
       advance()
     }
 })

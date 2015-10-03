@@ -6,6 +6,11 @@ appCSS <- ".mandatory_star { color: red; }"
 shinyUI(fluidPage(
   tags$head(
     includeScript("googleAnalytics.js"), 
+    tags$script(HTML('ga(function(tracker) {
+                    var clientId = tracker.get("clientId");
+                    Shiny.onInputChange("gaClientID", clientId);
+                    });')),
+    
     includeScript("changeVideo.js"),
     includeScript("updateVideoCache.js"),
     tags$script("Shiny.addCustomMessageHandler('scrollToTop', function(params){window.scrollTo(0,0);})")
@@ -14,10 +19,6 @@ shinyUI(fluidPage(
   inlineCSS(appCSS),
   tags$script(src="js/html5Preloader.js"),
   tags$script(HTML('myLoader = new html5Preloader();')),
-  tags$script(HTML('ga(function(tracker) {
-                    var clientId = tracker.get("clientId");
-                    Shiny.onInputChange("gaClientID", clientId);
-                   });')),
 # Disabled because it fails to work randomly in safari.
 #   tags$script(HTML('
 #                   // myLoader.on("finish", function(){  console.log("All assets loaded."); });
