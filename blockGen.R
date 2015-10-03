@@ -14,15 +14,24 @@ blockGen <- function(blockStruct, videosToUse, stimDir, maskColor, aws="", playB
   #subset for english words only
   videosDF <- filter(videosDF, wordtype != "nonEnglish")
   
-  wordRespData <- loadData("wordResp")
-  partSess <- loadData("participantsession")
-  prevData <- merge(wordRespData, partSess, by.x="partsessionid", by.y="id")
+  # Connect to the database
+  db <- fsdbConn()
+  # Construct the fetching query
+  query <- sprintf("SELECT wordResp.id as id, participantsession.gAnalyticsID, wordResp.timestamp, wordResp.video FROM wordResp, participantsession WHERE wordResp.partsessionid = participantsession.id;")
+  # Submit the fetch query and disconnect
+  prevData <- dbGetQuery(db, query)
+  dbDisconnect(db)
+  data
+  
+#   wordRespData <- loadData("wordResp")
+#   partSess <- loadData("participantsession")
+#   prevData <- merge(wordRespData, partSess, by.x="partsessionid", by.y="id")
   
   prevData$video <- as.factor(prevData$video)
  
   # for separating based on condition. To use this, the video chunker would have to be re-engineered
   # prevRespCounts <- prevData %>% group_by(speed, maskcolor, masktype, video) %>% summarise(nResps = length(timestamp), nRespSameGAid = sum(gAnalyticsID.y == gAnalyticsID))
-  prevRespCounts <- prevData %>% group_by(video) %>% summarise(nResps = length(timestamp), nRespSameGAid = sum(gAnalyticsID.y == gAnalyticsID))
+  prevRespCounts <- prevData %>% group_by(video) %>% summarise(nResps = length(timestamp), nRespSameGAid = sum(gAnalyticsID == gAnalyticsID))
   
   # remove directory info
   prevRespCounts$stimName <- gsub(".*(stim[[:digit:]]+.mp4)", "\\1",  prevRespCounts$video)
