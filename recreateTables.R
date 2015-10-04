@@ -2,7 +2,7 @@ source("dbUtils.R")
 
 # # (Re-)create the DB tables table
 if(TRUE){
-  db <- dbConnect(RMySQL::MySQL(), group = "fsExpAdmin", default.file="./mysql.cnf")
+  db <- dbConnect(RMySQL::MySQL(), group = "fsStudentAdmin", default.file="./mysql.cnf")
   query <- "DROP TABLE wordResp, participantsession, captchASL"
   results <- dbGetQuery(db, query)
   print(results)
