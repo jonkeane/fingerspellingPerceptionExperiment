@@ -131,12 +131,12 @@ nightwatchKeyGen <- function(videosToUse, path="./stimAns.json"){
 
 ##### tests ###################################
 
-# nightwatchKeyGen(videosToUse="wordList.csv")
+# nightwatchKeyGen(videosToUse="wordListASL3Students.csv")
 
-# testBlock <- blockGen(blockStruct="blockStructure.json", videosToUse="wordList.csv", stimDir="stimuli", maskColor="green", aws="http://meta.uchicago.edu", playBackrepetitions=5, transOnlyFirst=FALSE)
-
+# testBlock <- blockGen(blockStruct="blockStructure.json", videosToUse="wordListASL3Students.csv", stimDir="stimuli", maskColor="green", aws="http://localhost", playBackrepetitions=5, transOnlyFirst=FALSE)
+# 
 # testRandom <- function(n){
-#   block <- blockGen(blockStruct="blockStructure.json", videosToUse="wordList.csv", stimDir="stimuli", maskColor="green", aws="http://meta.uchicago.edu", playBackrepetitions=5, transOnlyFirst=FALSE)
+#   block <- blockGen(blockStruct="blockStructure.json", videosToUse="wordListASL3Students.csv", stimDir="stimuli", maskColor="green", aws="http://localhost", playBackrepetitions=5, transOnlyFirst=FALSE)
 #   dflist <- lapply(block, function(blk){blk[["videos"]]})
 #   dfOut <- do.call("rbind", dflist)
 #   dfOut$n <- n
