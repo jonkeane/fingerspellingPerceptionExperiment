@@ -12,3 +12,12 @@
 vignettes/*.html
 vignettes/*.pdf
 .Rproj.user
+
+# porject specific private files
+captchASLans.json
+globals.js
+mysql.cnf
+ritaApogeesCleaned.csv
+robot.csv
+stimAns.json
+wordList.csv
