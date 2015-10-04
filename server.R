@@ -232,7 +232,7 @@ shinyServer(function(input, output, session) {
       # print("before blockgen")
       # print(Sys.time())
       # generate blocks
-      sessValues$blocks <- blockGen(blockStruct="blockStructure.json", videosToUse="wordList.csv", stimDir="stimuli", maskColor="green", aws=aws, playBackrepetitions=2, gAnalyticsID=sessValues$gAnalyticsID) 
+      sessValues$blocks <- blockGen(blockStruct="blockStructure.json", videosToUse="videoListASL3Students.csv", stimDir="stimuli", maskColor="green", aws=aws, playBackrepetitions=2, gAnalyticsID=sessValues$gAnalyticsID) 
 #       print("after blockgen")
 #       print(Sys.time())
       enable(id = "robotSubmit")
