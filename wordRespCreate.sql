@@ -11,6 +11,7 @@ repetitions INT,
 speed VARCHAR(500), 
 maskcolor VARCHAR(500),
 masktype VARCHAR(500),
+playCount INT, 
 FOREIGN KEY (partsessionid) 
         REFERENCES participantsession(id)
         ON UPDATE CASCADE

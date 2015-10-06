@@ -62,14 +62,20 @@ if(contains(idsInCache, params.video)){
   stim = stimDiv.appendChild(vid);
 }
 
-// replay the video so the total views are 2. This should be pushed up to be extracted from params.
+
+// replay the video so the total views are 2.
 var playCount = 0;
+Shiny.onInputChange("playCount", playCount);
+console.log(playCount);
 stim.play();
 stim.onended = function () {
   playCount += 1;
+  Shiny.onInputChange("playCount", playCount);
+  console.log(playCount);
   if(playCount < params.rep){
     stim.play();
   }
 };
 
 });
+
