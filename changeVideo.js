@@ -66,12 +66,10 @@ if(contains(idsInCache, params.video)){
 // replay the video so the total views are 2.
 var playCount = 0;
 Shiny.onInputChange("playCount", playCount);
-console.log(playCount);
 stim.play();
 stim.onended = function () {
   playCount += 1;
   Shiny.onInputChange("playCount", playCount);
-  console.log(playCount);
   if(playCount < params.rep){
     stim.play();
   }
