@@ -83,7 +83,7 @@ shinyServer(function(input, output, session) {
     data <- sapply(fieldsAll, function(x) input[[x]])
     # strip anything that's not alphanumeric off of the input. This could be replaced with escapes.
     data <- sqlStrip(data)
-    data <- c(partsessionid = sessValues$participantID, data, timestamp = epochTime(), video = sessValues$videoUp$video, numInBlock = sessValues$videoUp$num, block = names(sessValues$blocks[1]), repetitions = sessValues$videoUp$rep, speed = sessValues$videoUp$speed, maskcolor = sessValues$videoUp$maskColor, masktype = sessValues$videoUp$maskType)
+    data <- c(partsessionid = sessValues$participantID, data, timestamp = epochTime(), video = sessValues$videoUp$video, numInBlock = sessValues$videoUp$num, block = names(sessValues$blocks[1]), repetitions = sessValues$videoUp$rep, speed = sessValues$videoUp$speed, maskcolor = sessValues$videoUp$maskColor, masktype = sessValues$videoUp$maskType, playCount = input$playCount)
     data
   })
   
@@ -116,7 +116,7 @@ shinyServer(function(input, output, session) {
   
   saveWordResp <- function(){
     if(!is.null(input[["word"]])){
-      # detect if there is data to save first!
+    # detect if there is data to save first!
       saveData(wordData(), table="wordResp")
       reset("form")
     }
@@ -221,7 +221,7 @@ shinyServer(function(input, output, session) {
   sessValues$gAnalyticsID <- NULL
   sessValues$blocks <- NULL
   sessValues$videoUp <- ""
-  
+
   observe({
     sessValues$gAnalyticsID <- input$gaClientID
   })
