@@ -12,7 +12,7 @@ robotKey <- robotList$answer
 names(robotKey) <- robotList$video
 
 # language background
-languageBG <- read.csv("studentBGQues.csv", stringsAsFactors = FALSE)
+languageBG <- read.csv("skilledBGQues.csv", stringsAsFactors = FALSE)
 # take options and turn them into list.
 
 # mandatory and fields for the experiment
@@ -289,7 +289,7 @@ shinyServer(function(input, output, session) {
       # they got all of the robotchecking captcha questions correct, proceed to language background
       langBG <- list()
       for(i in 1:nrow(languageBG)){
-        langBG <- append(langBG,BGquesGen(languageBG[i,], aws = aws, video=FALSE, text=TRUE))
+        langBG <- append(langBG,BGquesGen(languageBG[i,], aws = aws, video=TRUE, text=TRUE))
       }
       output$page <- renderUI({
         # language background

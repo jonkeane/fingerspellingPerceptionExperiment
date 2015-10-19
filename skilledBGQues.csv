@@ -1,0 +1,17 @@
+video,qName,translation,inputType,options,required
+skilled0.mp4,hearingStatus,"Are you deaf, hard of hearing, or hearing?",select,"deaf,hard of hearing,hearing",TRUE
+skilled1.mp4,ageAcqASL,At what age did you start learning ASL?,integer,,TRUE
+skilled2.mp4,age,How old are you now?,integer,,TRUE
+skilled3.mp4,howASL,"How did you acquire ASL? From parents, friends, interpreters, in a residential school, or by some other means? Please briefly explain here.",text,,TRUE
+skilled4.mp4,nativeLang,"What languages did you grow up speaking? If you had one, two, three or more languages growing up, please type them all.",text,,TRUE
+skilled5.mp4,ageAcqEng,"If English is not your first language, at what age did you learn English? If English is your first language, leave this blank.",integer,,
+skilled6.mp4,langs,"What languages do you speak, sign, read, or write? Please list them all.",text,,TRUE
+skilled7.mp4,interpreter,Are you an interpreter? Please pick yes or no.,select,"yes,no",TRUE
+skilled8.mp4,cert,"If you are an interpreter, please indicate the name of the certification(s) you hold and what level.",text,,
+skilled9.mp4,howLongCert,"If you're a certified interpreter, please indicate how long you've held the certification in years and or months.",text,,
+skilled10.mp4,fatherNativeLang,Now I'm going to ask you about your father's language background. What languages did your father grow up speaking signing? Please type them all.,text,,
+skilled11.mp4,fatherLangs,What languages does your father speak or sign? Please type them all.,text,,
+skilled12.mp4,fatherWhenLearnEnglish,"If English wasn't your father's first language, at what age did he first learn it? If you're not sure, it's ok to guess his age.",integer,,
+skilled20.mp4,motherNativeLang,"What was your mother's first language? If she grew up speaking signing multiple languages, please type them all.",text,,
+skilled21.mp4,motherLangs,"What languages does your mother speak, sign, read write? Please type them all.",text,,
+skilled22.mp4,motherWhenLearnEnglish,"If English wasn't your mother's first langauge, at what age did she first learn it? If you're not sure, it's ok to guess her age.",integer,,

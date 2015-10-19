@@ -8,7 +8,7 @@ labelMandatory <- function(label) {
 BGquesGen <- function(question, aws, video=TRUE, text=TRUE) {
   divOut <- list(
     if(video & question$video != ""){
-      tags$video(src=paste(aws, "studentBG", question$video, sep="/"), type = "video/mp4", controls=TRUE, width = 640 )
+      tags$video(src=paste(aws, "skilledASLbg", question$video, sep="/"), type = "video/mp4", controls=TRUE, width = 640 )
     },
     tags$br(),
     if(text & question$translation != ""){
