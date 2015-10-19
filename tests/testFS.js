@@ -1,7 +1,7 @@
 module.exports = {
   'Test captcha' : function (browser) {
     browser
-      .url('http://127.0.0.1:4479')
+      .url('http://127.0.0.1:4476')
       .waitForElementVisible('input.form-control.shiny-bound-input', 4000)
       // find the captcha response elements, and fill in based on the JSON in globals.
       .elements('css selector', 'input.form-control.shiny-bound-input', function (result) {
@@ -22,27 +22,43 @@ module.exports = {
 
   'Test background check' : function (browser) {
     browser
-      .waitForElementVisible('input#studyCode', 1000)
-      .assert.containsText('body', 'Language background')
-	  .setValue('input#studyCode', 'nightwatchtest')
-      // .waitForElementVisible('select#hearingStatus', 1000)
+    // Cannot see select elements?
+    // .waitForElementVisible('select#hearingStatus', 1000)
 	  // .setValue('select#hearingStatus', 'deaf')
       .waitForElementVisible('input#ageAcqASL', 1000)
-	  .setValue('input#ageAcqASL', '1')
+      .assert.containsText('body', 'Language background')
+	    .setValue('input#ageAcqASL', '1')
       .waitForElementVisible('input#age', 1000)
-	  .setValue('input#age', '1')
-      // .waitForElementVisible('select#majorReq', 1000)
-	  // .setValue('select#majorReq', 'no')
-      .waitForElementVisible('input#whyASL', 1000)
-	  .setValue('input#whyASL', 'nightwatchtest')
-      .waitForElementVisible('input#major', 1000)
-	  .setValue('input#major', 'nightwatchtest')
+	    .setValue('input#age', '1')
+      .waitForElementVisible('input#howASL', 1000)
+	    .setValue('input#howASL', 'computers')
       .waitForElementVisible('input#nativeLang', 1000)
-	  .setValue('input#nativeLang', 'javascript')
+      .setValue('input#nativeLang', 'javascript')
       .waitForElementVisible('input#ageAcqEng', 1000)
-	  .setValue('input#ageAcqEng', '1')
+	    .setValue('input#ageAcqEng', '1')
       .waitForElementVisible('input#langs', 1000)
-	  .setValue('input#langs', 'javascript	')
+	    .setValue('input#langs', 'javascript	')
+
+      // .waitForElementVisible('select#interpreter', 1000)
+      // .setValue('select#interpreter', 'no')
+      .waitForElementVisible('input#cert', 1000)
+	    .setValue('input#cert', 'Illinois Certified')
+      .waitForElementVisible('input#howLongCert', 1000)
+	    .setValue('input#howLongCert', '1 year')
+
+      .waitForElementVisible('input#fatherNativeLang', 1000)
+	    .setValue('input#fatherNativeLang', 'FORTRAN')
+      .waitForElementVisible('input#fatherLangs', 1000)
+	    .setValue('input#fatherLangs', 'FORTRAN, C')
+      .waitForElementVisible('input#fatherWhenLearnEnglish', 1000)
+	    .setValue('input#fatherWhenLearnEnglish', '0')
+
+      .waitForElementVisible('input#motherNativeLang', 1000)
+	    .setValue('input#motherNativeLang', 'FORTRAN')
+      .waitForElementVisible('input#motherLangs', 1000)
+	    .setValue('input#motherLangs', 'FORTRAN, C')
+      .waitForElementVisible('input#motherWhenLearnEnglish', 1000)
+	    .setValue('input#motherWhenLearnEnglish', '0')
 
       .pause(500) // for safari
       .waitForElementVisible('button#languageBGSubmit', 1000)
