@@ -1,4 +1,5 @@
 video,qName,translation,inputType,options,required
+,email,"If you would like your scores, please leave your email here.",text,,
 skilled0.mp4,hearingStatus,"Are you deaf, hard of hearing, or hearing?",select,"deaf,hard of hearing,hearing",TRUE
 skilled1.mp4,ageAcqASL,At what age did you start learning ASL?,integer,,TRUE
 skilled2.mp4,age,How old are you now?,integer,,TRUE
