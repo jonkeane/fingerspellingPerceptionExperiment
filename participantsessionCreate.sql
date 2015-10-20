@@ -1,5 +1,6 @@
 CREATE TABLE participantsession(
 id INT UNIQUE PRIMARY KEY AUTO_INCREMENT, 
+email VARCHAR(500),
 hearingStatus VARCHAR(500),
 ageAcqASL INT,
 age INT,
