@@ -26,6 +26,10 @@ fieldsAllBG <- languageBG$qName
 #stimuli video setup
 stimDir <- "stimuli"
 maskColor <- "green"
+# aws <- "http://localhost"
+aws <- "https://s3.amazonaws.com/fingerspelling-perception"
+
+
 
 # # for writing the stim csv
 # webDir <- "www"
