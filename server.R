@@ -26,8 +26,8 @@ fieldsAllBG <- languageBG$qName
 #stimuli video setup
 stimDir <- "stimuli"
 maskColor <- "green"
-# aws <- "http://localhost"
-aws <- "https://s3.amazonaws.com/fingerspelling-perception"
+aws <- "http://localhost"
+# aws <- "https://s3.amazonaws.com/fingerspelling-perception"
 
 # # for writing the stim csv
 # webDir <- "www"
@@ -226,22 +226,37 @@ shinyServer(function(input, output, session) {
   observe({
     sessValues$gAnalyticsID <- input$gaClientID
   })
-    
-  observeEvent(sessValues$gAnalyticsID,{
-    if({!is.null(sessValues$gAnalyticsID) & is.null(sessValues$blocks)}){
-      # if the google analytics id is not null, and the blocks are null, generate new blocks, which can take a little bit.
-      # print("before blockgen")
-      # print(Sys.time())
-      # generate blocks
-      sessValues$blocks <- blockGen(blockStruct="blockStructure.json", videosToUse="wordList.csv", stimDir="stimuli", maskColor="green", aws=aws, playBackrepetitions=2, gAnalyticsID=sessValues$gAnalyticsID) 
-#       print("after blockgen")
-#       print(Sys.time())
-      enable(id = "robotSubmit")
-      # # changing text seems to make the button only showup once the blocks are generated.
-      # output$robotSubmitButton <- renderUI({actionButton("robotSubmit", "submit", class = "btn-primary")})
-    }
-  })
 
+  observeEvent(input$grabStims, {
+    print("grabbing, false")
+    if(input$grabStims==1){
+      print("grabbing, true")
+      # grab stim list
+      progress <- shiny::Progress$new()
+      progress$set(message = "Generating videos", value = 0)
+      
+      n <- 10
+      for (i in 1:n) {
+        tryCatch({
+          print(sessValues$blocks)
+          Sys.sleep(5)
+          sessValues$blocks <- blockGen(blockStruct="blockStructure.json", videosToUse="wordList.csv", stimDir="stimuli", maskColor="green", aws=aws, playBackrepetitions=2, gAnalyticsID=sessValues$gAnalyticsID)
+          print(sessValues$blocks)
+        },
+        error = function(e) {
+          # Increment the progress bar, and update the detail text.
+          progress$set(1/n, detail = paste("Trying again: ", i))              
+        })
+        if(!is.null(sessValues$blocks)){
+          progress$set(1, detail = paste("Loaded!"))
+          progress$close()
+          break
+        }
+      }
+    }
+  })  
+  
+  
   # generate a subset of robot checking answers, and display them.
   # if 0 rows are specified, then skip this whole thing?
   robotSubList <- randomRows(robotList, 4, nonRandom=FALSE)
@@ -292,6 +307,11 @@ shinyServer(function(input, output, session) {
       for(i in 1:nrow(languageBG)){
         langBG <- append(langBG,BGquesGen(languageBG[i,], aws = aws, video=TRUE, text=TRUE))
       }
+      session$onFlush(function() {
+        session$sendCustomMessage(type="grabStimuliList", list(TRUE))
+#         sessValues$grabStims <- TRUE
+      })  
+      
       output$page <- renderUI({
         # language background
         div(
@@ -302,6 +322,8 @@ shinyServer(function(input, output, session) {
           align = "center"
         )
       })
+
+      
     } else {
       output$page <- renderUI({
         # Scroll to the top
@@ -338,6 +360,20 @@ shinyServer(function(input, output, session) {
     
     # enable/disable the submit button
     toggleState(id = "submit", condition = mandatoryFilled)
+  })
+  
+  observe({
+    # check if all Robot fields have a value
+    mandatoryFilled <-
+      vapply(robotSubList[1:nrow(robotSubList),]$video,
+             function(x) {
+               !is.null(input[[x]]) && input[[x]] != ""
+             },
+             logical(1))
+    mandatoryFilled <- all(mandatoryFilled)
+    
+    # enable/disable the submit button
+    toggleState(id = "robotSubmit", condition = mandatoryFilled)
   })
   
   # Check if all of the required language background items were filled out

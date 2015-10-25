@@ -10,7 +10,8 @@ shinyUI(fluidPage(
                     var clientId = tracker.get("clientId");
                     Shiny.onInputChange("gaClientID", clientId);
                     });')),
-    
+#     tags$script(HTML('Shiny.onInputChange("grabStims", 0);')),
+    includeScript("grabStimuliList.js"),
     includeScript("changeVideo.js"),
     includeScript("updateVideoCache.js"),
     tags$script("Shiny.addCustomMessageHandler('scrollToTop', function(params){window.scrollTo(0,0);})")
