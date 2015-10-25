@@ -228,9 +228,7 @@ shinyServer(function(input, output, session) {
   })
 
   observeEvent(input$grabStims, {
-    print("grabbing, false")
     if(input$grabStims==1){
-      print("grabbing, true")
       # grab stim list
       progress <- shiny::Progress$new()
       progress$set(message = "Generating videos", value = 0)
@@ -238,10 +236,8 @@ shinyServer(function(input, output, session) {
       n <- 10
       for (i in 1:n) {
         tryCatch({
-          print(sessValues$blocks)
-          Sys.sleep(5)
-          sessValues$blocks <- blockGen(blockStruct="blockStructure.json", videosToUse="wordList.csv", stimDir="stimuli", maskColor="green", aws=aws, playBackrepetitions=2, gAnalyticsID=sessValues$gAnalyticsID)
-          print(sessValues$blocks)
+          Sys.sleep(1)
+          sessValues$blocks <- blockGen(blockStruct="blockStructure.json", videosToUse="wordListASL3Students.csv", stimDir="stimuli", maskColor="green", aws=aws, playBackrepetitions=2, gAnalyticsID=sessValues$gAnalyticsID)
         },
         error = function(e) {
           # Increment the progress bar, and update the detail text.
