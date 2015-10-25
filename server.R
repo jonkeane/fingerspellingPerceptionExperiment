@@ -26,8 +26,6 @@ fieldsAllBG <- languageBG$qName
 #stimuli video setup
 stimDir <- "stimuli"
 maskColor <- "green"
-# aws <- "http://localhost"
-aws <- "https://s3.amazonaws.com/fingerspelling-perception"
 
 # # for writing the stim csv
 # webDir <- "www"
@@ -307,11 +305,7 @@ shinyServer(function(input, output, session) {
       for(i in 1:nrow(languageBG)){
         langBG <- append(langBG,BGquesGen(languageBG[i,], aws = aws, video=TRUE, text=TRUE))
       }
-      session$onFlush(function() {
-        session$sendCustomMessage(type="grabStimuliList", list(TRUE))
-#         sessValues$grabStims <- TRUE
-      })  
-      
+
       output$page <- renderUI({
         # language background
         div(
@@ -322,6 +316,11 @@ shinyServer(function(input, output, session) {
           align = "center"
         )
       })
+      
+      session$onFlushed(function() {
+        session$sendCustomMessage(type="grabStimuliList", list(TRUE))
+        # sessValues$grabStims <- TRUE
+      })  
 
       
     } else {
