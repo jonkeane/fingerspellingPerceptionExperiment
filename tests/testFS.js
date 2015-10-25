@@ -1,7 +1,7 @@
 module.exports = {
   'Test captcha' : function (browser) {
     browser
-      .url('http://127.0.0.1:5172')
+      .url('http://shiny.jonkeane.com/asl3fingerspelling/')
       .waitForElementVisible('input.form-control.shiny-bound-input', 4000)
       // find the captcha response elements, and fill in based on the JSON in globals.
       .elements('css selector', 'input.form-control.shiny-bound-input', function (result) {
