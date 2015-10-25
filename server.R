@@ -34,7 +34,7 @@ aws <- "http://localhost"
 # condition <- "allClear"
 # searchPath <- file.path(webDir, stimDir, maskColor, condition)
 # appendPath <- file.path(stimDir, maskColor, condition)
-# 
+#
 # videos <- file.path(appendPath, list.files(path=searchPath))
 # videos <- list.files(path=searchPath)
 # write.csv(videos, "videoList.csv", row.names = FALSE, col.names = FALSE)
@@ -87,7 +87,7 @@ shinyServer(function(input, output, session) {
     data <- c(partsessionid = sessValues$participantID, data, timestamp = epochTime(), video = sessValues$videoUp$video, numInBlock = sessValues$videoUp$num, block = names(sessValues$blocks[1]), repetitions = sessValues$videoUp$rep, speed = sessValues$videoUp$speed, maskcolor = sessValues$videoUp$maskColor, masktype = sessValues$videoUp$maskType, playCount = input$playCount)
     data
   })
-  
+
   bgData <- reactive({
     data <- sapply(fieldsAllBG, function(x) input[[x]])
     # strip anything that's not alphanumeric off of the input. This could be replaced with escapes.
@@ -95,26 +95,26 @@ shinyServer(function(input, output, session) {
     data <- c(id = NULL, data, gAnalyticsID = sessValues$gAnalyticsID, startTime = humanTime()) # The null might not need to be here, alternately, this could be listified.
     data
   })
-  
+
   saveData <- function(data, table) {
     # Connect to the database
     db <- fsdbConn()
     # Construct the update query by looping over the data fields
     query <- sprintf(
       "INSERT INTO %s (%s) VALUES ('%s')",
-      table, 
+      table,
       paste(c(names(data)), collapse = ", "),
       paste(c(data), collapse = "', '")
     )
-    
+
     # Submit the update query and disconnect
     dbGetQuery(db, query)
     lastInsert <- dbGetQuery(db, "SELECT LAST_INSERT_ID();")[1,1]
     dbDisconnect(db)
-    
+
     return(lastInsert)
   }
-  
+
   saveWordResp <- function(){
     if(!is.null(input[["word"]])){
     # detect if there is data to save first!
@@ -123,7 +123,7 @@ shinyServer(function(input, output, session) {
     }
   }
 
-  
+
   nextBlock <- function(){
     output$page <- renderUI({
       # Scroll to the top
@@ -132,15 +132,15 @@ shinyServer(function(input, output, session) {
       # the extended javascript requires arguments to be submitted individually, and unlisting with do.call and the like does not seem to work. Very hacky.
       # do.call(js$updateVideoCache, videoCache)
       session$sendCustomMessage(type = 'updateVideoCache', message = list(
-        sessValues$blocks[[1]]$videos[1,]$video, 
-        sessValues$blocks[[1]]$videos[2,]$video, 
-        sessValues$blocks[[1]]$videos[3,]$video, 
-        sessValues$blocks[[1]]$videos[4,]$video, 
-        sessValues$blocks[[1]]$videos[5,]$video, 
-        sessValues$blocks[[1]]$videos[6,]$video, 
-        sessValues$blocks[[1]]$videos[7,]$video, 
-        sessValues$blocks[[1]]$videos[8,]$video, 
-        sessValues$blocks[[1]]$videos[9,]$video, 
+        sessValues$blocks[[1]]$videos[1,]$video,
+        sessValues$blocks[[1]]$videos[2,]$video,
+        sessValues$blocks[[1]]$videos[3,]$video,
+        sessValues$blocks[[1]]$videos[4,]$video,
+        sessValues$blocks[[1]]$videos[5,]$video,
+        sessValues$blocks[[1]]$videos[6,]$video,
+        sessValues$blocks[[1]]$videos[7,]$video,
+        sessValues$blocks[[1]]$videos[8,]$video,
+        sessValues$blocks[[1]]$videos[9,]$video,
         sessValues$blocks[[1]]$videos[10,]$video
         ))
 
@@ -151,16 +151,16 @@ shinyServer(function(input, output, session) {
         uiOutput("continueButton"),
         align = "center",
         style = "padding: 50px;"
-      ) 
+      )
     })
-    
+
     output$continueButton <- renderUI({
 #       actionButton("continue", label = "please wait...", class = "btn-primary", disabled = TRUE)
         actionButton("continue", label = "continue", class = "btn-primary")
     })
   }
-  
-  
+
+
   advance <- function(){
     if(nrow(sessValues$blocks[[1]]$videos)==0){
       # change to the next block
@@ -185,26 +185,26 @@ shinyServer(function(input, output, session) {
 
         #display the video, disable the context menu to attempt to stop people from playing the video more than once.
         div(
-          id = "stimuliVideo", 
-          oncontextmenu="return false;", 
+          id = "stimuliVideo",
+          oncontextmenu="return false;",
           align = "center",
           style = "padding: 15px;"
         ),
         div(
           id = "form",
           textInput("word", labelMandatory("What word was fingerspelled?"), ""),
-          actionButton("submit", "submit", class = "btn-primary"), 
+          actionButton("submit", "submit", class = "btn-primary"),
           align = "center"
         )
       )})
-      
+
       # grab the next video and then store the videos list less the first
       sessValues$videoUp <- head(sessValues$blocks[[1]]$videos, 1)
       sessValues$blocks[[1]]$videos <- tail(sessValues$blocks[[1]]$videos, nrow(sessValues$blocks[[1]]$videos)-1)
-      
+
       if(!is.na(sessValues$blocks[[1]]$videos[10,]$video)){
         session$sendCustomMessage(type = 'updateVideoCache', message = list(sessValues$blocks[[1]]$videos[10,]$video))
-      }      
+      }
 
       # the message needs to be formed *outside* of the onFlushed function.
       # possibly related to? https://github.com/daattali/shinyjs/issues/39
@@ -215,7 +215,7 @@ shinyServer(function(input, output, session) {
 
     }
   }
-  
+
   ##### Start the experiment ######################################################################
   # setup reactive values
   sessValues <- reactiveValues()
@@ -234,7 +234,7 @@ shinyServer(function(input, output, session) {
       # grab stim list
       progress <- shiny::Progress$new()
       progress$set(message = "Generating videos", value = 0)
-      
+
       n <- 10
       for (i in 1:n) {
         tryCatch({
@@ -245,7 +245,7 @@ shinyServer(function(input, output, session) {
         },
         error = function(e) {
           # Increment the progress bar, and update the detail text.
-          progress$set(1/n, detail = paste("Trying again: ", i))              
+          progress$set(1/n, detail = paste("Trying again: ", i))
         })
         if(!is.null(sessValues$blocks)){
           progress$set(1, detail = paste("Loaded!"))
@@ -254,9 +254,9 @@ shinyServer(function(input, output, session) {
         }
       }
     }
-  })  
-  
-  
+  })
+
+
   # generate a subset of robot checking answers, and display them.
   # if 0 rows are specified, then skip this whole thing?
   robotSubList <- randomRows(robotList, 4, nonRandom=FALSE)
@@ -265,7 +265,7 @@ shinyServer(function(input, output, session) {
                         tags$br(),
                         tags$br(),
                         tags$br())
-  
+
   for(n in 1:nrow(robotSubList)){
     vid <- robotSubList[n,]$video
     robotElemList <- append(robotElemList, list(tags$video(src=paste(aws, "robot", vid, sep="/"), type = "video/mp4", controls=TRUE, width = 640 ),
@@ -277,7 +277,7 @@ shinyServer(function(input, output, session) {
   output$page <- renderUI({
     # Scroll to the top
     session$sendCustomMessage(type = 'scrollToTop', message=list())
-    
+
     # Captcha section
     div(
       id = "robotForm",
@@ -296,7 +296,7 @@ shinyServer(function(input, output, session) {
     data <- gsub(" ", "", data)
     data <- tolower(data)
     ans <- data %in% unlist(strsplit(robotKey[names(data)], ","))
-    
+
     # dump answers to database for analysis later
     captchaData <- list(gAnalyticsID = sessValues$gAnalyticsID, video = names(data), response = unname(data), correct = as.integer(ans))
     saveData(captchaData, table="captchASL")
@@ -307,46 +307,47 @@ shinyServer(function(input, output, session) {
       for(i in 1:nrow(languageBG)){
         langBG <- append(langBG,BGquesGen(languageBG[i,], aws = aws, video=FALSE, text=TRUE))
       }
-      session$onFlush(function() {
-        session$sendCustomMessage(type="grabStimuliList", list(TRUE))
-#         sessValues$grabStims <- TRUE
-      })  
-      
+
       output$page <- renderUI({
         # language background
         div(
           id = "languageBG",
           h2("Language background", style = "padding: 15px;"),
           langBG,
-          actionButton("languageBGSubmit", "submit", class = "btn-primary"), 
+          actionButton("languageBGSubmit", "submit", class = "btn-primary"),
           align = "center"
         )
       })
 
-      
+      session$onFlushed(function() {
+        session$sendCustomMessage(type="grabStimuliList", list(TRUE))
+        # sessValues$grabStims <- TRUE
+      })
+
+
     } else {
       output$page <- renderUI({
         # Scroll to the top
         session$sendCustomMessage(type = 'scrollToTop', message=list())
-        
+
         div(
           id = "thankyou_msg",
           h3("Sorry, you do not qualify for the study.")
         )
       })
     }
-    
+
     # Scroll to the top
     session$sendCustomMessage(type = 'scrollToTop', message=list())
-    })  
+    })
 
   observeEvent(input$languageBGSubmit, {
     sessValues$participantID <-  saveData(bgData(), table="participantsession")
     # start the experiment
     nextBlock()
-  })  
-  
-    
+  })
+
+
   # Check if the word is filled out.
   observe({
     # check if all mandatory fields have a value
@@ -357,11 +358,11 @@ shinyServer(function(input, output, session) {
              },
              logical(1))
     mandatoryFilled <- all(mandatoryFilled)
-    
+
     # enable/disable the submit button
     toggleState(id = "submit", condition = mandatoryFilled)
   })
-  
+
   observe({
     # check if all Robot fields have a value
     mandatoryFilled <-
@@ -371,11 +372,11 @@ shinyServer(function(input, output, session) {
              },
              logical(1))
     mandatoryFilled <- all(mandatoryFilled)
-    
+
     # enable/disable the submit button
     toggleState(id = "robotSubmit", condition = mandatoryFilled)
   })
-  
+
   # Check if all of the required language background items were filled out
   observe({
     # check if all mandatory fields have a value
@@ -386,11 +387,11 @@ shinyServer(function(input, output, session) {
              },
              logical(1))
     mandatoryFilled <- all(mandatoryFilled)
-    
+
     # enable/disable the submit button
     toggleState(id = "languageBGSubmit", condition = mandatoryFilled)
   })
-  
+
   # check if precaching is done on the pause screens
 #   observe({
 #     if(!is.null(input$donePrecaching)){
@@ -406,20 +407,20 @@ shinyServer(function(input, output, session) {
 # #       disable(id = "continue")
 #     }
 #   })
-  
-  
+
+
   # action to take when the continue button is pressed
   observeEvent(input$continue, {
     advance()
     })
-  
-  
+
+
   # action to take when submit button is pressed
   observeEvent(input$submit, {
     saveWordResp()
     advance()
   })
-  
+
   # action to take when the enter key is pressed
   observeEvent(input$keysPressed, {
     if(input$keysPressed == 13 & {all(vapply(fieldsMandatory,
@@ -431,5 +432,5 @@ shinyServer(function(input, output, session) {
       advance()
     }
 })
-  
+
 })
