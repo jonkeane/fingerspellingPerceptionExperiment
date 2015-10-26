@@ -22,6 +22,8 @@ module.exports = {
 
   'Test background check' : function (browser) {
     browser
+    .waitForElementVisible('input#email', 1000)
+    .setValue('input#email', 'nightwatch@jonkeane.com')
     // Cannot see select elements?
     // .waitForElementVisible('select#hearingStatus', 1000)
 	  // .setValue('select#hearingStatus', 'deaf')
