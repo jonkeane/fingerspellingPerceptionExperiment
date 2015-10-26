@@ -33,24 +33,18 @@ wordResponses$orientation <- as.factor(ifelse(grepl("[ghpq]+",as.character(wordR
 
 uniqueWordResponses <- unique(wordResponses)
 
-realParticipantsessions <- filter(participantsessions, !{studyCode %in% c("crashtestdummy", "jontestmacprochrome", "jontestsafarimacpro")})
-realParticipantsessions$studyCode <- toupper(realParticipantsessions$studyCode)
+realParticipantsessions <- filter(participantsessions, !{email %in% c("crashtestdummy", "jontestmacprochrome", "jontestsafarimacpro")})
 
 fullData <- merge(select(uniqueWordResponses, -gAnalyticsID), realParticipantsessions, by.x="partsessionid", by.y="id")
 
 # Check that the videos they observed match the blocks:
-fullData$blockVid <- gsub("http://localhost/stimuli/regular/green/", "", as.character(fullData$video))
+fullData$blockVid <- gsub("https://s3.amazonaws.com/fingerspelling-perception/stimuli/regular/green/", "", as.character(fullData$video))
 fullData <- separate(fullData, blockVid, c("vidCond", "vidDispl"), sep = "/")
 
 fullData$vidBlockMatch <- fullData$vidCond == ifelse(fullData$block %in% c("allClearA","allClearB", "practice"), "allClear", ifelse(fullData$block == "transitionsOnly", "transOnly", fullData$block))
 # all but 74, below matches.
 
-##### regroup, based on time and  ###################################
 testSet <- filter(fullData)
-
-# patsessionid == 74, studycode == D2T47, the last allclear, is actually called holdsOnly, but the stimuli video is really from allclear, so change it.
-testSet[testSet$timestamp == 1442425519, ]$video
-testSet[testSet$timestamp == 1442425519, ]$block <- "allClearA"
 
 testSet$blockFact <- factor(testSet$block, levels = c("practice", "allClearA", "holdsOnly", "transitionsOnly", "allClearB"))
 
@@ -81,19 +75,19 @@ data <- data  %>% group_by(partsessionid) %>% mutate(expComplete=all(blockComple
 # View(filter(data, blockInfo == "more seen"))
 
 ### Analysis of participant interactions
-studyCodes <- unique(select(data, partsessionid, studyCode, expComplete, expAllSeen))
+emails <- unique(select(data, partsessionid, email, expComplete, expAllSeen))
 
-# View(studyCodes[duplicated(studyCodes$studyCode)|duplicated(studyCodes$studyCode, fromLast=TRUE),])
+# View(emails[duplicated(emails$email)|duplicated(emails$email, fromLast=TRUE),])
 
-# studyCodes that started, but did not finish the experiment, and that did not try again, subsquently finishing.
-unique(filter(data, !expComplete)$studyCode)[!{unique(filter(data, !expComplete)$studyCode) %in% unique(filter(data, expComplete)$studyCode)}]
+# emails that started, but did not finish the experiment, and that did not try again, subsquently finishing.
+unique(filter(data, !expComplete)$email)[!{unique(filter(data, !expComplete)$email) %in% unique(filter(data, expComplete)$email)}]
 
-# studyCodes that started and finished and saw exactly five blocks.
-unique(filter(data, numBlocksSeen<5)$studyCode)
+# emails that started and finished and saw exactly five blocks.
+unique(filter(data, numBlocksSeen<5)$email)
 
 
-# studyCodes that started and finished and saw exactly five blocks.
-unique(filter(data, expComplete & expAllSeen & numBlocksSeen==5)$studyCode)
+# emails that started and finished and saw exactly five blocks.
+unique(filter(data, expComplete & expAllSeen & numBlocksSeen==5)$email)
 
 cleanData <- filter(data, expComplete & expAllSeen & numBlocksSeen==5 & block != "practice")
 
