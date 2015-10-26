@@ -262,7 +262,7 @@ shinyServer(function(input, output, session) {
   
   # generate a subset of robot checking answers, and display them.
   # if 0 rows are specified, then skip this whole thing?
-  robotSubList <- randomRows(robotList, 4, nonRandom=FALSE)
+  robotSubList <- randomRows(robotList, 1, nonRandom=FALSE)
   robotElemList <- list(tags$video(src=paste(aws, "robot", "robotPrevention.mp4", sep="/"), type = "video/mp4", controls=TRUE, width = 640, autoplay=TRUE),
                         tags$br(),
                         tags$br(),
