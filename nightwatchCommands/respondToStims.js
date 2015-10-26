@@ -26,7 +26,7 @@ exports.command = function(reps, callback) {
 										// console.log(attrib);
 										return attrib === null;
 								}, 1000)
-						    .pause(500) // for safari
+						    .pause(3000) // for safari
 						    .click('button#submit')
 
 								.pause(1000);

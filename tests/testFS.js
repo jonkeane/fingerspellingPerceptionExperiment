@@ -1,7 +1,7 @@
 module.exports = {
   'Test captcha' : function (browser) {
     browser
-      .url('http://127.0.0.1:4476')
+      .url('http://shiny.jonkeane.com/fingerspelling/')
       .waitForElementVisible('input.form-control.shiny-bound-input', 4000)
       // find the captcha response elements, and fill in based on the JSON in globals.
       .elements('css selector', 'input.form-control.shiny-bound-input', function (result) {
@@ -25,7 +25,7 @@ module.exports = {
     // Cannot see select elements?
     // .waitForElementVisible('select#hearingStatus', 1000)
 	  // .setValue('select#hearingStatus', 'deaf')
-      .waitForElementVisible('input#ageAcqASL', 1000)
+      .waitForElementVisible('input#ageAcqASL', 3000)
       .assert.containsText('body', 'Language background')
 	    .setValue('input#ageAcqASL', '1')
       .waitForElementVisible('input#age', 1000)
@@ -64,6 +64,7 @@ module.exports = {
       .waitForElementVisible('button#languageBGSubmit', 1000)
       .click('button#languageBGSubmit')
       .pause(1000)
+      .waitForElementVisible('button#continue', 10000)
 	  .assert.containsText('body', 'Now we\'re ready to start the experiment, first let\'s try a few practice items.')
 
   },
