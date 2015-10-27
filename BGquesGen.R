@@ -13,9 +13,9 @@ BGquesGen <- function(question, aws, video=TRUE, text=TRUE) {
     tags$br(),
     if(text & question$translation != ""){
       if(!is.na(question$required) & question$required){
-        labelMandatory(question$translation)
+        tags$p(labelMandatory(question$translation))
       } else {
-        question$translation
+        tags$p(question$translation)
       }
     },
     if(question$inputType=="text"){
@@ -23,16 +23,19 @@ BGquesGen <- function(question, aws, video=TRUE, text=TRUE) {
     } else if(question$inputType=="integer"){
       numericInput(question$qName, NULL, NULL, min=0, max=120)
     } else if(question$inputType=="select"){
-      selectInput(question$qName, NULL, selected = NULL, choices = unlist(strsplit(question$options, split=",")))
+      selectInput(question$qName, NULL, selected = NULL, choices = unlist(strsplit(question$options, split=",")), selectize=FALSE)
     } else if(question$inputType=="yesno"){
-      selectInput(question$qName, NULL, selected = NULL, choices = c("yes","no"))
+      selectInput(question$qName, NULL, selected = NULL, choices = c("yes","no"), selectize=FALSE)
     }
   )
   return(divOut)
 }
 
-
+##### Test
+# languageBG <- read.csv("skilledBGQues.csv", stringsAsFactors = FALSE)
+# aws <- "http://localhost"
+# 
 # langBG <- list()
 # for(i in 1:nrow(languageBG)){
-#   langBG <- append(langBG,BGquesGen(languageBG[i,], video=FALSE))
+#   langBG <- append(langBG,BGquesGen(languageBG[i,], aws = aws, video=TRUE, text=TRUE))
 # }
