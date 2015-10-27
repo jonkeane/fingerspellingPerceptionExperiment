@@ -311,11 +311,15 @@ shinyServer(function(input, output, session) {
           },
           error = function(e) {
             # Should there be some kind of connection closing?
+            # write errors to the log.
+            cat(paste("failed to grab db info",i,"times. With error:\n"), file = stderr())
+            cat(paste(e$message, "\n"), file = stderr())
             Sys.sleep(5)
             # Increment the progress bar, and update the detail text.
             progress$set(i/n, detail = paste("Trying again: ", i))
             if(i>=n){
               progress$set(1, detail = paste("There was an error loading videos, please contact jonkeane@uchicago.edu"))
+              stopApp(1)
             }
           })
         }
