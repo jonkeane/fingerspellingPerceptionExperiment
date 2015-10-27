@@ -319,7 +319,7 @@ shinyServer(function(input, output, session) {
             progress$set(i/n, detail = paste("Trying again: ", i))
             if(i>=n){
               progress$set(1, detail = paste("There was an error loading videos, please contact jonkeane@uchicago.edu"))
-              stopApp(1)
+#               stopApp(1) # this is a little ugly.
             }
           })
         }
