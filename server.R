@@ -229,37 +229,6 @@ shinyServer(function(input, output, session) {
     sessValues$gAnalyticsID <- input$gaClientID
   })
 
-  observeEvent(input$grabStims, {
-    # add error if there are no responses?
-    print("grabbing, false")
-    if(input$grabStims==1){
-      print("grabbing, true")
-      # grab stim list
-      progress <- shiny::Progress$new()
-      progress$set(message = "Generating videos", value = 0)
-      
-      n <- 10
-      for (i in 1:n) {
-        tryCatch({
-          print(sessValues$blocks)
-          sessValues$blocks <- blockGen(blockStruct="blockStructure.json", videosToUse="wordList.csv", stimDir="stimuli", maskColor="green", aws=aws, playBackrepetitions=2, gAnalyticsID=sessValues$gAnalyticsID)
-          print(sessValues$blocks)
-        },
-        error = function(e) {
-          Sys.sleep(5)
-          # Increment the progress bar, and update the detail text.
-          progress$set(i/n, detail = paste("Trying again: ", i))
-        })
-        if(!is.null(sessValues$blocks)){
-          progress$set(1, detail = paste("Loaded!"))
-          progress$close()
-          break
-        }
-      }
-    }
-  })  
-  
-  
   # generate a subset of robot checking answers, and display them.
   # if 0 rows are specified, then skip this whole thing?
   robotSubList <- randomRows(robotList, 4, nonRandom=FALSE)
@@ -291,7 +260,7 @@ shinyServer(function(input, output, session) {
     )
   })
 
-
+  
   observeEvent(input$robotSubmit, {
     data <- sapply(robotSubList$video, function(x) input[[x]])
     # strip anything that's not alphanumeric off of the input. This could be replaced with escapes.
@@ -310,7 +279,7 @@ shinyServer(function(input, output, session) {
       for(i in 1:nrow(languageBG)){
         langBG <- append(langBG,BGquesGen(languageBG[i,], aws = aws, video=TRUE, text=TRUE))
       }
-
+      
       output$page <- renderUI({
         # language background
         div(
@@ -322,17 +291,38 @@ shinyServer(function(input, output, session) {
         )
       })
       
-      session$onFlushed(function() {
-        session$sendCustomMessage(type="grabStimuliList", list(TRUE))
-        # sessValues$grabStims <- TRUE
-      })  
-
+      session$onFlushed(function(){
+        # grab stim list
+        progress <- shiny::Progress$new(session, 0, 1)
+        progress$set(message = "Generating videos", value = 0)
+        
+        n <- 5
+        blocks <- NULL
+        for (i in 1:n) {
+          tryCatch({
+            Sys.sleep(1)
+            blocks <- blockGen(blockStruct="blockStructure.json", videosToUse="wordList.csv", stimDir="stimuli", maskColor="green", aws=aws, playBackrepetitions=2, gAnalyticsID=sessValues$gAnalyticsID)
+            if(!is.null(blocks)){
+              sessValues$blocks <- blocks
+              progress$set(1, detail = paste("Loaded!"))
+              progress$close()
+              break
+            }
+          },
+          error = function(e) {
+            # Should there be some kind of connection closing?
+            Sys.sleep(5)
+            # Increment the progress bar, and update the detail text.
+            progress$set(i/n, detail = paste("Trying again: ", i))
+            if(i>=n){
+              progress$set(1, detail = paste("There was an error loading videos, please contact jonkeane@uchicago.edu"))
+            }
+          })
+        }
+      }, once=TRUE)  
       
     } else {
       output$page <- renderUI({
-        # Scroll to the top
-        session$sendCustomMessage(type = 'scrollToTop', message=list())
-        
         div(
           id = "thankyou_msg",
           h3("Sorry, you do not qualify for the study.")
@@ -348,7 +338,8 @@ shinyServer(function(input, output, session) {
     sessValues$participantID <-  saveData(bgData(), table="participantsession")
     # start the experiment
     nextBlock()
-  })  
+  })
+  
   
     
   # Check if the word is filled out.
