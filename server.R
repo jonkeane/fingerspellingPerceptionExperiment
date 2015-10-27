@@ -47,7 +47,7 @@ videoCSV <- "wordList.csv"
 ##### functions for convenience
 sqlStrip <- function(string) {
   # remove any character that's not alphanumeric, a dot, a space, or a hyphen
-  string <- gsub("[^ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01234567890\\. \\-]", "", string)
+  string <- gsub("[^ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01234567890@\\. \\-]", "", string)
   return(string)
 }
 
