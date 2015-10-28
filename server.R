@@ -270,7 +270,7 @@ shinyServer(function(input, output, session) {
     ans <- data %in% unlist(strsplit(robotKey[names(data)], ","))
     
     # dump answers to database for analysis later
-    captchaData <- list(gAnalyticsID = sessValues$gAnalyticsID, video = names(data), response = unname(data), correct = as.integer(ans))
+    captchaData <- list(gAnalyticsID = sessValues$gAnalyticsID, video = names(data), response = unname(data), correct = as.integer(all(ans)))
     saveData(captchaData, table="captchASL")
 
     if(all(ans)){
