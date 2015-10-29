@@ -13,59 +13,9 @@ blockGen <- function(blockStruct, videosToUse, stimDir, maskColor, aws="", playB
   
   #subset for english words only
   videosDF <- filter(videosDF, wordtype != "nonEnglish")
-  
-  # Connect to the database
-  db <- fsdbConn()
-  # Construct the fetching query
-  query <- sprintf("SELECT wordResp.id as id, participantsession.gAnalyticsID, wordResp.timestamp, wordResp.video FROM wordResp, participantsession WHERE wordResp.partsessionid = participantsession.id;")
-  # Submit the fetch query and disconnect
-  prevData <- dbGetQuery(db, query)
-  dbDisconnect(db)
-  data
-  
-#   wordRespData <- loadData("wordResp")
-#   partSess <- loadData("participantsession")
-#   prevData <- merge(wordRespData, partSess, by.x="partsessionid", by.y="id")
-  
-  prevData$video <- as.factor(prevData$video)
- 
-  # for separating based on condition. To use this, the video chunker would have to be re-engineered
-  # prevRespCounts <- prevData %>% group_by(speed, maskcolor, masktype, video) %>% summarise(nResps = length(timestamp), nRespSameGAid = sum(gAnalyticsID.y == gAnalyticsID))
-  prevRespCounts <- prevData %>% group_by(video) %>% summarise(nResps = length(timestamp), nRespSameGAid = sum(gAnalyticsID == gAnalyticsID))
-  
-  # remove directory info
-  prevRespCounts$stimName <- gsub(".*(stim[[:digit:]]+.mp4)", "\\1",  prevRespCounts$video)
-  
-  # merge the whole videosDF with the previous response counts
-  videosWithCounts <- merge(select(videosDF, stimName), select(prevRespCounts, -video), all.x=TRUE)
-  
-  # change all NAs (stims that haven't been seen before) to 0 counts
-  videosWithCounts$nResps[is.na(videosWithCounts$nResps)] <- 0
-  videosWithCounts$nRespSameGAid[is.na(videosWithCounts$nRespSameGAid)] <- 0
-  
-  # summarize after grouping by stimname so that the counts for each condition are collapsed. sum or mean works here, mean should be less sensative to one stim getting a bunch in one block than sum.
-  videosWithCounts <- videosWithCounts %>% group_by(stimName) %>% summarise(nResps = mean(nResps, na.rm=TRUE), nRespSameGAid = mean(nRespSameGAid, na.rm=TRUE))
-  
-  # order, first the responseses with the same GA id, and then overall number of responses. (this will prefer stims this GA id has seen the least, and then after that prefer stims that have been seen the least.)
-  videosWithCounts <- videosWithCounts[with(videosWithCounts, order(nRespSameGAid, nResps)), ]
-  
-  # determine weights from number of observations, weighting heavier for this GA having seen the stim, and then invert all of the probabilities so the least seen stimuli are the most likely.
-  if(all(videosWithCounts$nResps == 0)){
-    # If there is no data, use a flate probability
-    videosWithCounts$prob <- 1/nrow(videosWithCounts)
-  } else {
-    # If there is any data at all, generate probabilites based on what has been seen already.
-    addToFloor <- 0.0001
-    numer = ((videosWithCounts$nRespSameGAid*5+videosWithCounts$nResps)/sum(videosWithCounts$nRespSameGAid*5+videosWithCounts$nResps)+addToFloor)
-    denom = (sum(1/((videosWithCounts$nRespSameGAid*5+videosWithCounts$nResps)/sum(videosWithCounts$nRespSameGAid*5+videosWithCounts$nResps)+addToFloor)))
-    videosWithCounts$prob<-1/numer/denom
-  }
-
-#   # convert to character vector for simple ordering
-#   videos <- as.character(videosWithCounts$stimName)
 
   # sample without replacement for weighted probability ordering sample again to randomize the resulting order.
-  videos <- as.character(sample(sample(videosWithCounts$stimName, nrow(videosWithCounts), replace=FALSE, prob = videosWithCounts$prob)))
+  videos <- as.character(sample(videosDF$stimName, nrow(videosDF), replace=FALSE))
 
   # grab structure and messages from the external json file.
   blocks <- fromJSON(blockStruct)
@@ -132,7 +82,7 @@ nightwatchKeyGen <- function(videosToUse, path="./stimAns.json"){
 ##### tests ###################################
 
 # nightwatchKeyGen(videosToUse="wordListASL3Students.csv")
-
+# 
 # testBlock <- blockGen(blockStruct="blockStructure.json", videosToUse="wordListASL3Students.csv", stimDir="stimuli", maskColor="green", aws="http://localhost", playBackrepetitions=5, transOnlyFirst=FALSE)
 # 
 # testRandom <- function(n){
