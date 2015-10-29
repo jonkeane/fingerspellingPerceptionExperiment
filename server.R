@@ -227,32 +227,6 @@ shinyServer(function(input, output, session) {
     sessValues$gAnalyticsID <- input$gaClientID
   })
 
-  observeEvent(input$grabStims, {
-    if(input$grabStims==1){
-      # grab stim list
-      progress <- shiny::Progress$new()
-      progress$set(message = "Generating videos", value = 0)
-
-      n <- 10
-      for (i in 1:n) {
-        tryCatch({
-          Sys.sleep(1)
-          sessValues$blocks <- blockGen(blockStruct="blockStructure.json", videosToUse="wordListASL3Students.csv", stimDir="stimuli", maskColor="green", aws=aws, playBackrepetitions=2, gAnalyticsID=sessValues$gAnalyticsID)
-        },
-        error = function(e) {
-          # Increment the progress bar, and update the detail text.
-          progress$set(1/n, detail = paste("Trying again: ", i))
-        })
-        if(!is.null(sessValues$blocks)){
-          progress$set(1, detail = paste("Loaded!"))
-          progress$close()
-          break
-        }
-      }
-    }
-  })
-
-
   # generate a subset of robot checking answers, and display them.
   # if 0 rows are specified, then skip this whole thing?
   robotSubList <- randomRows(robotList, 4, nonRandom=FALSE)
@@ -315,10 +289,43 @@ shinyServer(function(input, output, session) {
         )
       })
 
-      session$onFlushed(function() {
-        session$sendCustomMessage(type="grabStimuliList", list(TRUE))
-        # sessValues$grabStims <- TRUE
-      })
+      session$onFlushed(function(){
+        sessValues$blocks <- blockGen(blockStruct="blockStructure.json", videosToUse="wordListASL3Students.csv", stimDir="stimuli", maskColor="green", aws=aws, playBackrepetitions=2, gAnalyticsID=sessValues$gAnalyticsID)
+      }, once=TRUE)
+      
+#       session$onFlushed(function(){
+#         # grab stim list this is a lot of extra work, but is used in the skilled signer experiment when there's a db call.
+#         progress <- shiny::Progress$new(session, 0, 1)
+#         progress$set(message = "Generating videos", value = 0)
+#         
+#         n <- 5
+#         blocks <- NULL
+#         for (i in 1:n) {
+#           tryCatch({
+#             Sys.sleep(1)
+#             sessValues$blocks <- blockGen(blockStruct="blockStructure.json", videosToUse="wordListASL3Students.csv", stimDir="stimuli", maskColor="green", aws=aws, playBackrepetitions=2, gAnalyticsID=sessValues$gAnalyticsID)
+#             if(!is.null(blocks)){
+#               sessValues$blocks <- blocks
+#               progress$set(1, detail = paste("Loaded!"))
+#               progress$close()
+#               break
+#             }
+#           },
+#           error = function(e) {
+#             # Should there be some kind of connection closing?
+#             # write errors to the log.
+#             cat(paste("failed to grab db info",i,"times. With error:\n"), file = stderr())
+#             cat(paste(e$message, "\n"), file = stderr())
+#             Sys.sleep(5)
+#             # Increment the progress bar, and update the detail text.
+#             progress$set(i/n, detail = paste("Trying again: ", i))
+#             if(i>=n){
+#               progress$set(1, detail = paste("There was an error loading videos, please contact jonkeane@uchicago.edu"))
+#               #               stopApp(1) # this is a little ugly.
+#             }
+#           })
+#         }
+#       }, once=TRUE)  
 
 
     } else {

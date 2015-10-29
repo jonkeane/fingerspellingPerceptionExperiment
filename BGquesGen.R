@@ -23,9 +23,9 @@ BGquesGen <- function(question, aws, video=TRUE, text=TRUE) {
     } else if(question$inputType=="integer"){
       numericInput(question$qName, NULL, NULL, min=0, max=120)
     } else if(question$inputType=="select"){
-      selectInput(question$qName, NULL, selected = NULL, choices = unlist(strsplit(question$options, split=",")))
+      selectInput(question$qName, NULL, selected = NULL, choices = unlist(strsplit(question$options, split=",")), selectize=FALSE)
     } else if(question$inputType=="yesno"){
-      selectInput(question$qName, NULL, selected = NULL, choices = c("yes","no"))
+      selectInput(question$qName, NULL, selected = NULL, choices = c("yes","no"), selectize=FALSE)
     }
   )
   return(divOut)

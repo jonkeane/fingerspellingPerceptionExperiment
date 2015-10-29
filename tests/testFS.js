@@ -1,7 +1,8 @@
 module.exports = {
   'Test captcha' : function (browser) {
     browser
-      .url('http://shiny.jonkeane.com/asl3fingerspelling/')
+      // .url('http://shiny.jonkeane.com/asl3fingerspelling/')
+      .url('http://localhost:3788')
       .waitForElementVisible('input.form-control.shiny-bound-input', 4000)
       // find the captcha response elements, and fill in based on the JSON in globals.
       .elements('css selector', 'input.form-control.shiny-bound-input', function (result) {
@@ -22,7 +23,7 @@ module.exports = {
 
   'Test background check' : function (browser) {
     browser
-      .waitForElementVisible('input#studyCode', 1000)
+      .waitForElementVisible('input#studyCode', 4000)
       .assert.containsText('body', 'Language background')
 	  .setValue('input#studyCode', 'nightwatchtest')
       // .waitForElementVisible('select#hearingStatus', 1000)
