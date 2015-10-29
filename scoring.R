@@ -11,9 +11,9 @@ words <- letters %>% group_by(word, wordBegin, wordEnd, wordList, repetition, wo
 
 letters
 
-words <- read.csv("wordList.csv")
+words <- read.csv("wordListASL3Students.csv")
 
-words$videoName <- gsub("wordInstanceVideos/", "", as.character(words$wordInstanceVideoPath))
+words$videoName <- gsub("foo/", "", as.character(words$wordInstanceVideoPath))
 
 answers <- as.character(words$word)
 names(answers) <- words$videoName
