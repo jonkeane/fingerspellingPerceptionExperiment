@@ -152,7 +152,7 @@ nightwatchKeyGen <- function(videosToUse, path="./stimAns.json"){
 
 # nightwatchKeyGen(videosToUse="wordList.csv")
 
-testBlock <- blockGen(blockStruct="blockStructure.json", videosToUse="wordList.csv", stimDir="stimuli", maskColor="green", aws="http://meta.uchicago.edu", playBackrepetitions=5, transOnlyFirst=FALSE)
+# testBlock <- blockGen(blockStruct="blockStructure.json", videosToUse="wordList.csv", stimDir="stimuli", maskColor="green", aws="http://meta.uchicago.edu", playBackrepetitions=5, transOnlyFirst=FALSE)
 
 # 
 # testRandom <- function(n){
