@@ -1,5 +1,6 @@
 library(jsonlite)
 library(dplyr)
+source("dbUtils.R")
 
 
 blockGen <- function(blockStruct, videosToUse, stimDir, maskColor, aws="", playBackrepetitions=1, transOnlyFirst=FALSE, gAnalyticsID="") {
@@ -37,14 +38,14 @@ blockGen <- function(blockStruct, videosToUse, stimDir, maskColor, aws="", playB
   prevRespCounts$stimName <- gsub(".*(stim[[:digit:]]+.mp4)", "\\1",  prevRespCounts$video)
   
   # merge the whole videosDF with the previous response counts
-  videosWithCounts <- merge(select(videosDF, stimName), select(prevRespCounts, -video), all.x=TRUE)
+  videosWithCounts <- merge(select(videosDF, stimName, word, signer), select(prevRespCounts, -video), all.x=TRUE)
   
   # change all NAs (stims that haven't been seen before) to 0 counts
   videosWithCounts$nResps[is.na(videosWithCounts$nResps)] <- 0
   videosWithCounts$nRespSameGAid[is.na(videosWithCounts$nRespSameGAid)] <- 0
   
   # summarize after grouping by stimname so that the counts for each condition are collapsed. sum or mean works here, mean should be less sensative to one stim getting a bunch in one block than sum.
-  videosWithCounts <- videosWithCounts %>% group_by(stimName) %>% summarise(nResps = mean(nResps, na.rm=TRUE), nRespSameGAid = mean(nRespSameGAid, na.rm=TRUE))
+  videosWithCounts <- videosWithCounts %>% group_by(stimName, word, signer) %>% summarise(nResps = mean(nResps, na.rm=TRUE), nRespSameGAid = mean(nRespSameGAid, na.rm=TRUE))
   
   # order, first the responseses with the same GA id, and then overall number of responses. (this will prefer stims this GA id has seen the least, and then after that prefer stims that have been seen the least.)
   videosWithCounts <- videosWithCounts[with(videosWithCounts, order(nRespSameGAid, nResps)), ]
@@ -64,14 +65,32 @@ blockGen <- function(blockStruct, videosToUse, stimDir, maskColor, aws="", playB
 #   # convert to character vector for simple ordering
 #   videos <- as.character(videosWithCounts$stimName)
 
-  # sample without replacement for weighted probability ordering sample again to randomize the resulting order.
-  videos <- as.character(sample(sample(videosWithCounts$stimName, nrow(videosWithCounts), replace=FALSE, prob = videosWithCounts$prob)))
+  # sample without replacement for weighted probability ordering
+  videosWithCountsOrdered <- videosWithCounts[sample(1:nrow(videosWithCounts), nrow(videosWithCounts), replace=FALSE, prob = videosWithCounts$prob),]
+  
+  # deduplicate words
+  videosWithCountsOrderedDedupped <- videosWithCountsOrdered[!duplicated(videosWithCountsOrdered$word),]
+  # tests
+  # print.data.frame(videosWithCountsOrderedDedupped)
+  # print(xtabs(~word, videosWithCountsOrderedDedupped))
 
+  
   # grab structure and messages from the external json file.
   blocks <- fromJSON(blockStruct)
-
-  # cut the list of videos to use into chunks based on the block descriptions
   chunks <- sapply(blocks, function(list){return(list[["numStims"]])})
+
+  # ensure that each signer is equaly represented
+  nSigners <- length(unique(videosWithCountsOrderedDedupped$signer))
+
+  videos <- videosWithCountsOrderedDedupped %>% group_by(signer) %>% do(head(., sum(chunks)/nSigners))
+  # test
+  # print.data.frame(videos)
+  # print(xtabs(~signer, videos))
+  
+  # sample again to randomize the resulting order.
+  videos <- sample(as.character(videos$stimName), replace = FALSE)
+  
+  # cut the list of videos to use into chunks based on the block descriptions
   videos <- head(videos, sum(chunks))
   videochunks <- split(videos, rep(1:length(chunks), chunks))
   
@@ -133,8 +152,9 @@ nightwatchKeyGen <- function(videosToUse, path="./stimAns.json"){
 
 # nightwatchKeyGen(videosToUse="wordList.csv")
 
-# testBlock <- blockGen(blockStruct="blockStructure.json", videosToUse="wordList.csv", stimDir="stimuli", maskColor="green", aws="http://meta.uchicago.edu", playBackrepetitions=5, transOnlyFirst=FALSE)
+testBlock <- blockGen(blockStruct="blockStructure.json", videosToUse="wordList.csv", stimDir="stimuli", maskColor="green", aws="http://meta.uchicago.edu", playBackrepetitions=5, transOnlyFirst=FALSE)
 
+# 
 # testRandom <- function(n){
 #   block <- blockGen(blockStruct="blockStructure.json", videosToUse="wordList.csv", stimDir="stimuli", maskColor="green", aws="http://meta.uchicago.edu", playBackrepetitions=5, transOnlyFirst=FALSE)
 #   dflist <- lapply(block, function(blk){blk[["videos"]]})
@@ -143,9 +163,16 @@ nightwatchKeyGen <- function(videosToUse, path="./stimAns.json"){
 #   return(dfOut)
 # }
 # 
-# randoSample <- lapply(1:1000, testRandom)
+# randoSample <- lapply(1:100, testRandom)
 # 
 # outRandom <- do.call(rbind, randoSample)
+# 
+# # merge with wordlist, to checkout various grouping effects.
+# videosDF <- read.csv("wordList.csv")
+# videosDF$stim <- as.character(videosDF$stimName)
+# outRandom$stim <- as.character(outRandom$stim)
+# outRandom <- left_join(select(outRandom, -video), select(videosDF, stim, word, signer), by="stim")
+# 
 # 
 # 
 # unique(outRandom) %>% group_by(n) %>% do(data.frame(uniStimsN = length(unique(.$stim)), stimsN = length(.$stim))) -> testRandomResults
@@ -157,6 +184,10 @@ nightwatchKeyGen <- function(videosToUse, path="./stimAns.json"){
 # 
 # # view distribution of stimuli, excluding the practice rows.
 # subset(outRandom, !grepl("practice", rownames(outRandom))) %>% group_by(stim, maskType) %>% do(data.frame(rows = nrow(.))) %>% ggplot(.) + aes(x=rows) + geom_histogram() + facet_wrap(~maskType, ncol=1)
+# 
+# # view distribution of stimuli, including the practice rows (so the all clear distribution is shifted higher.
+# subset(outRandom, !grepl("practice", rownames(outRandom))) %>% group_by(signer, maskType) %>% do(data.frame(rows = nrow(.))) %>% ggplot(.) + aes(x=rows) + geom_histogram() + facet_wrap(signer~maskType, ncol=1)
+
 
 # 
 # lapply(test, function(x){print.data.frame(x[["videos"]]); return(NULL)})
