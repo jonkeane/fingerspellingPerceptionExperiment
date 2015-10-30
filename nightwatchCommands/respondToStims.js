@@ -26,10 +26,10 @@ exports.command = function(reps, callback) {
 										// console.log(attrib);
 										return attrib === null;
 								}, 1000)
-						    .pause(3000) // for safari
+						    .pause(1000) // for safari
 						    .click('button#submit')
 
-								.pause(1000);
+								.pause(5000); // long, for waiting for videos to complete.
 								i++;
 								// console.log(i);
 				        } else {
