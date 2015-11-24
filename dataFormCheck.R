@@ -1,23 +1,37 @@
+library(plyr)
 library(dplyr)
 library(lme4)
+library(arm)
 library(ggplot2)
 library(lubridate)
 library(stringr)
 library(tidyr)
+source("dbUtils.R")
+source("ggCaterpillar.R")
+source("CoefficientPlot.R")
+source("predictions.R")
 
+# grab participant data
 participantsessions <- loadData("participantsession")
 participantsessions$startTime <- ymd_hms(participantsessions$startTime)
 participantsessions$follPartStartTime <- NA
 participantsessions[1:nrow(participantsessions)-1,]$follPartStartTime <- participantsessions[2:nrow(participantsessions),]$startTime
 participantsessions$follPartStartTime <- as.POSIXct(participantsessions$follPartStartTime, origin = "1970-01-01",tz = "GMT")
 
-
+# grab response data
 wordResponses <- loadData("wordResp")
 
-words <- read.csv("wordList.csv")
+# read in the words.
+words <- read.csv("wordListASL3Students.csv")
 
-words$videoName <- gsub("wordInstanceVideos/", "", as.character(words$wordInstanceVideoPath))
+# read in mapping from study codes to training types, gender, comments.
+studyCodesToTests <- read.csv("codesToTest.csv")
+studyCodesToTests$studyCode <- as.character(studyCodesToTests$studyCode)
 
+# subset the video name to be just stim[#].mp4
+words$videoName <- gsub("foo/", "", as.character(words$wordInstanceVideoPath))
+
+# generate a named list that contains the answers
 answers <- as.character(words$word)
 names(answers) <- words$videoName
 
@@ -31,15 +45,21 @@ wordResponses$correct <- {wordResponses$word == wordResponses$stimWord}
 
 wordResponses$orientation <- as.factor(ifelse(grepl("[ghpq]+",as.character(wordResponses$stimWord)),"Non-default","Default"))
 
-uniqueWordResponses <- unique(wordResponses)
+# uniqueWordResponses <- unique(wordResponses)
 
-realParticipantsessions <- filter(participantsessions, !{studyCode %in% c("crashtestdummy", "jontestmacprochrome", "jontestsafarimacpro")})
+# filter and uppercase studycodes
+realParticipantsessions <- filter(participantsessions, !{studyCode %in% c("nightwatchtest")})
 realParticipantsessions$studyCode <- toupper(realParticipantsessions$studyCode)
 
-fullData <- merge(select(uniqueWordResponses, -gAnalyticsID), realParticipantsessions, by.x="partsessionid", by.y="id")
+# Merge with responses and participant data
+fullData <- merge(wordResponses, realParticipantsessions, by.x="partsessionid", by.y="id")
+
+# Merge with study codes identifying the training types.
+fullData <- merge(fullData, studyCodesToTests)
+
 
 # Check that the videos they observed match the blocks:
-fullData$blockVid <- gsub("http://localhost/stimuli/regular/green/", "", as.character(fullData$video))
+fullData$blockVid <- gsub("https://s3.amazonaws.com/fingerspelling-perception/stimuli/half/black/", "", as.character(fullData$video))
 fullData <- separate(fullData, blockVid, c("vidCond", "vidDispl"), sep = "/")
 
 fullData$vidBlockMatch <- fullData$vidCond == ifelse(fullData$block %in% c("allClearA","allClearB", "practice"), "allClear", ifelse(fullData$block == "transitionsOnly", "transOnly", fullData$block))
@@ -49,8 +69,8 @@ fullData$vidBlockMatch <- fullData$vidCond == ifelse(fullData$block %in% c("allC
 testSet <- filter(fullData)
 
 # patsessionid == 74, studycode == D2T47, the last allclear, is actually called holdsOnly, but the stimuli video is really from allclear, so change it.
-testSet[testSet$timestamp == 1442425519, ]$video
-testSet[testSet$timestamp == 1442425519, ]$block <- "allClearA"
+# testSet[testSet$timestamp == 1442425519, ]$video
+# testSet[testSet$timestamp == 1442425519, ]$block <- "allClearA"
 
 testSet$blockFact <- factor(testSet$block, levels = c("practice", "allClearA", "holdsOnly", "transitionsOnly", "allClearB"))
 
@@ -78,10 +98,13 @@ data <- fullData %>%
 data <- data  %>% group_by(partsessionid) %>% mutate(numBlocksSeen=length(unique(block)))
 data <- data  %>% group_by(partsessionid) %>% mutate(expComplete=all(blockComplete), expAllSeen=all(blockAllSeen))
 
-# View(filter(data, blockInfo == "more seen"))
+View(select(filter(data, expComplete == FALSE), partsessionid , id , word , timestamp  , numInBlock , block , repetitions , playCount , timestampUTC , maxNumInBlock , realNumInBlock , blockComplete , blockAllSeen , blockInfo , numBlocksSeen , expComplete , expAllSeen))
+
 
 ### Analysis of participant interactions
 studyCodes <- unique(select(data, partsessionid, studyCode, expComplete, expAllSeen))
+
+print.data.frame(studyCodes)
 
 # View(studyCodes[duplicated(studyCodes$studyCode)|duplicated(studyCodes$studyCode, fromLast=TRUE),])
 
@@ -103,13 +126,54 @@ cleanData$block <- factor(cleanData$block, levels = c("allClearA", "holdsOnly", 
 
 
 
-fit <- glmer(correct~block*orientation+(1|numInBlock)+(1+block*orientation|stimWord)+(1+block*orientation|partsessionid), cleanData, family=binomial(link="logit"),na.action="na.omit", control = glmerControl(optimizer="bobyqa", optCtrl=list(maxfun=4000000)))
+# fit <- glmer(correct~block*orientation+(1|numInBlock)+(1+block*orientation|stimWord)+(1+block*orientation|partsessionid), cleanData, family=binomial(link="logit"),na.action="na.omit", control = glmerControl(optimizer="bobyqa", optCtrl=list(maxfun=4000000)))
 
-fit.0 <- glmer(correct~block*orientation+(1|numInBlock)+(1+block+orientation|stimWord)+(1+block+orientation|partsessionid), cleanData, family=binomial(link="logit"),na.action="na.omit", control = glmerControl(optimizer="bobyqa", optCtrl=list(maxfun=4000000)))
+fit.0 <- glmer(correct~block*orientation*training+(1|numInBlock)+(1+block+orientation+training|stimWord)+(1+block+orientation+training|partsessionid), cleanData, family=binomial(link="logit"),na.action="na.omit", control = glmerControl(optimizer="bobyqa", optCtrl=list(maxfun=4000000)))
+summary(fit.0)
+CoefficientPlot(list(fit.0))
+
+ggplot(pred(fit.0)) + aes(x=block, y=invlogit(correct), ymin=invlogit(plo), ymax=invlogit(phi)) + geom_pointrange()  + facet_grid(orientation~training)+ ylim(0,1) + labs(title = "Model predictions for accuracy", x = "block", y = "probability of correct response") 
+
+
+predFun <- function(fitModel) {
+  vars <- str_split(as.character(fitModel@call$formula), fixed(" "))
+  outcomeVarName <- vars[[2]]
+  
+  newDat <- fitModel@frame
+  newDat[,outcomeVarName] <- NA
+  newDat <- unique(newDat)
+  
+  predict(fitModel,newDat)
+}
+
+predLabelFun <- function(fitModel) {
+  vars <- str_split(as.character(fitModel@call$formula), fixed(" "))
+  outcomeVarName <- vars[[2]]
+  
+  newDat <- fitModel@frame
+  newDat[,outcomeVarName] <- NA
+  newDat <- unique(newDat)
+  
+  newDat
+}
+
+system.time(
+bbnew <- bootMer(fit.0, nsim=1000, FUN=predFun, seed=101, parallel="multicore", ncpus = parallel::detectCores(), use.u = TRUE)
+)
+
+test <- left_join(add_rownames(predLabelFun(fit.0), var = "rowname"), gather(as.data.frame(bb$t), rowname, pred)) %>% group_by(cat, subj) %>% summarise(plo = quantile(pred, probs = c(0.025), na.rm=TRUE), contact = quantile(pred, probs = c(0.5), na.rm=TRUE), phi = quantile(pred, probs = c(0.975), na.rm=TRUE))
+
+
+# fit.1 <- glmer(correct~block*orientation+(1|numInBlock)+(1+block|stimWord)+(1+block+orientation|partsessionid), cleanData, family=binomial(link="logit"),na.action="na.omit", control = glmerControl(optimizer="bobyqa", optCtrl=list(maxfun=4000000)))
+# summary(fit.1)
+
+# fit.2 <- glmer(correct~block*orientation+(1|numInBlock)+(1|stimWord)+(1+block+orientation|partsessionid), cleanData, family=binomial(link="logit"),na.action="na.omit", control = glmerControl(optimizer="bobyqa", optCtrl=list(maxfun=4000000)))
+# summary(fit.2)
+
+
+fit.0 <- glmer(correct~block*training+(1|numInBlock)+(1+block+training|stimWord)+(1+block+training|partsessionid), cleanData, family=binomial(link="logit"),na.action="na.omit", control = glmerControl(optimizer="bobyqa", optCtrl=list(maxfun=4000000)))
 summary(fit.0)
 
-fit.1 <- glmer(correct~block*orientation+(1|numInBlock)+(1+block|stimWord)+(1+block+orientation|partsessionid), cleanData, family=binomial(link="logit"),na.action="na.omit", control = glmerControl(optimizer="bobyqa", optCtrl=list(maxfun=4000000)))
+fit.1 <- glmer(correct~orientation*training+(1|numInBlock)+(1+training|stimWord)+(1+training|partsessionid), cleanData, family=binomial(link="logit"),na.action="na.omit", control = glmerControl(optimizer="bobyqa", optCtrl=list(maxfun=4000000)))
 summary(fit.1)
 
-fit.2 <- glmer(correct~block*orientation+(1|numInBlock)+(1|stimWord)+(1+block+orientation|partsessionid), cleanData, family=binomial(link="logit"),na.action="na.omit", control = glmerControl(optimizer="bobyqa", optCtrl=list(maxfun=4000000)))
-summary(fit.2)
